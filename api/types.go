@@ -63,3 +63,15 @@ type Task struct {
 	Updated         time.Time       `json:"updated"`
 	Urgency         float64         `json:"-"`
 }
+type GetAllTasksParams struct {
+	Page              int    `json:"page,omitempty"`
+	PerPage           int    `json:"per_page,omitempty"`
+	S                 string `json:"s,omitempty"`
+	SortBy            string `json:"sort_by,omitempty"`
+	OrderBy           string `json:"order_by,omitempty"`
+	FilterBy          string `json:"filter_by,omitempty"`
+	FilterValue       string `json:"filter_value,omitempty"`
+	FilterComparator  string `json:"filter_comparator,omitempty"`
+	FilterConcat      string `json:"filter_concat,omitempty"`
+	FilterIncludeNulls string `json:"filter_include_nulls,omitempty"`
+}
