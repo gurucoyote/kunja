@@ -117,7 +117,9 @@ func (client *ApiClient) Login(username string, password string, totp_passcode s
 	}
 	token, ok := result["token"]
 	if !ok {
-		// todo: print out the original json response as indented string, then return the error
+		// Print out the original json response as indented string
+		formattedResponse, _ := json.MarshalIndent(result, "", "  ")
+		fmt.Println(string(formattedResponse))
 		return "", errors.New("token not found in response")
 	}
 	client.Token = token
