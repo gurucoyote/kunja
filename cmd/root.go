@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"kunja/api"
 	"github.com/spf13/cobra"
+	"encoding/json"
 )
 
 var (
@@ -18,12 +19,6 @@ var rootCmd = &cobra.Command{
 	Short: "A CLI client for the Vikunja task management API",
 	Long:  `A CLI client for the Vikunja task management API. It allows you to interact with the Vikunja API from the command line.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Hello %s\n", Username)
-	},
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		if Verbose {
-			fmt.Println("Verbose mode enabled")
-		}
 		client := api.NewApiClient(BaseUrl, "")
 		token, err := client.Login(Username, Password, "")
 		if err != nil {
@@ -31,6 +26,20 @@ var rootCmd = &cobra.Command{
 			return
 		}
 		fmt.Println("Logged in with token:", token)
+
+		tasks, err := client.GetAllTasks(api.GetAllTasksParams{})
+		if err != nil {
+			fmt.Println("Error getting tasks:", err)
+			return
+		}
+
+		formattedTasks, _ := json.MarshalIndent(tasks, "", "  ")
+		fmt.Println(string(formattedTasks))
+	},
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		if Verbose {
+			fmt.Println("Verbose mode enabled")
+		}
 	},
 }
 
