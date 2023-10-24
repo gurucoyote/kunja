@@ -7,6 +7,8 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/google/go-querystring/query"
 )
 
 type ApiClient struct {
