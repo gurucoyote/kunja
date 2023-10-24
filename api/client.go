@@ -34,6 +34,14 @@ func (client *ApiClient) Get(apiPath string) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		var result map[string]string
+		body, _ := ioutil.ReadAll(resp.Body)
+		json.Unmarshal(body, &result)
+		return "", fmt.Errorf("status code: %d, message: %s", resp.StatusCode, result["message"])
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
