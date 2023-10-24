@@ -33,8 +33,18 @@ var rootCmd = &cobra.Command{
 			return
 		}
 
-		formattedTasks, _ := json.MarshalIndent(tasks, "", "  ")
-		fmt.Println(string(formattedTasks))
+		if Verbose {
+			formattedTasks, _ := json.MarshalIndent(tasks, "", "  ")
+			fmt.Println(string(formattedTasks))
+		} else {
+			for _, task := range tasks {
+				fmt.Printf("ID: %d\nTitle: %s\n", task.ID, task.Title)
+				if task.Description != "" {
+					fmt.Printf("Description: %s\n", task.Description)
+				}
+				fmt.Println()
+			}
+		}
 	},
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if Verbose {
