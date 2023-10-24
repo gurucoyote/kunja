@@ -9,3 +9,11 @@ type ApiClient struct {
 	Token      string
 	ApiBaseUrl string
 }
+
+func NewApiClient(baseURL string, token string) *ApiClient {
+	return &ApiClient{
+		HttpClient: &http.Client{},
+		Token:      token,
+		ApiBaseUrl: baseURL,
+	}
+}
