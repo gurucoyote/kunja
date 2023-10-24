@@ -26,8 +26,8 @@ var rootCmd = &cobra.Command{
 			return
 		}
 		if Verbose {
-		fmt.Println("Logged in with token:", token)
-	}
+			fmt.Println("Logged in with token:", token)
+		}
 
 		allTasks, err := client.GetAllTasks(api.GetAllTasksParams{})
 		if err != nil {
