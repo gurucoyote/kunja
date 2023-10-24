@@ -189,7 +189,7 @@ func (client *ApiClient) Login(username string, password string, totp_passcode s
 	if err != nil {
 		return "", err
 	}
-	response, err := client.Post("/loginP", string(payloadBytes))
+	response, err := client.Post("/login", string(payloadBytes))
 	if err != nil {
 		return "", err
 	}
