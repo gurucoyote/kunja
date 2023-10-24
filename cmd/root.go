@@ -10,6 +10,7 @@ var (
 	Verbose  bool
 	Username string
 	Password string
+	BaseUrl  string
 )
 
 var rootCmd = &cobra.Command{
@@ -27,6 +28,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
 	rootCmd.PersistentFlags().StringVarP(&Username, "username", "u", "", "username for the API")
 	rootCmd.PersistentFlags().StringVarP(&Password, "password", "p", "", "password for the API")
+	rootCmd.PersistentFlags().StringVarP(&BaseUrl, "baseurl", "b", "", "base URL for the API")
 }
 
 func Execute() error {
