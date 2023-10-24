@@ -61,6 +61,12 @@ func (client *ApiClient) Post(apiPath string, payload string) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		var result map[string]string
+		body, _ := ioutil.ReadAll(resp.Body)
+		json.Unmarshal(body, &result)
+		return "", fmt.Errorf("status code: %d, message: %s", resp.StatusCode, result["message"])
+	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
@@ -80,6 +86,12 @@ func (client *ApiClient) Put(apiPath string, payload string) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		var result map[string]string
+		body, _ := ioutil.ReadAll(resp.Body)
+		json.Unmarshal(body, &result)
+		return "", fmt.Errorf("status code: %d, message: %s", resp.StatusCode, result["message"])
+	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
@@ -98,6 +110,12 @@ func (client *ApiClient) Delete(apiPath string) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		var result map[string]string
+		body, _ := ioutil.ReadAll(resp.Body)
+		json.Unmarshal(body, &result)
+		return "", fmt.Errorf("status code: %d, message: %s", resp.StatusCode, result["message"])
+	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
@@ -115,7 +133,7 @@ func (client *ApiClient) Login(username string, password string, totp_passcode s
 	if err != nil {
 		return "", err
 	}
-	response, err := client.Post("/login", string(payloadBytes))
+	response, err := client.Post("/loginP", string(payloadBytes))
 	if err != nil {
 		return "", err
 	}
