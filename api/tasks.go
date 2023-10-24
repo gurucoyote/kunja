@@ -25,20 +25,20 @@ func (client *ApiClient) GetAllTasks(params GetAllTasksParams) ([]Task, error) {
 
 func (task *Task) CalculateUrgency() {
 	if task.Done {
-		task.Urgency = 0
+		task.Urgency = 0.0
 		return
 	}
-	dueDateScore := task.getDueDateScore()
-	priorityScore := task.Priority
-	favoriteScore := 0
+	dueDateScore := float64(task.getDueDateScore())
+	priorityScore := float64(task.Priority)
+	favoriteScore := 0.0
 	if task.IsFavorite {
-		favoriteScore = 1
+		favoriteScore = 1.0
 	}
-	task.Urgency = 1 + dueDateScore + priorityScore + favoriteScore
+	task.Urgency = 1.0 + dueDateScore + priorityScore + favoriteScore
 }
 
 func (task *Task) getDueDateScore() int {
-	if task.DueDate == nil {
+	if task.DueDate.IsZero() {
 		return 0
 	}
 	dueDays := int(task.DueDate.Sub(time.Now()).Hours() / 24)
