@@ -123,6 +123,62 @@ func (client *ApiClient) Delete(apiPath string) (string, error) {
 	return string(body), nil
 }
 
+/*
+
+OpenAPI spec for /login:
+        "/login": {
+            "post": {
+                "description": "Logs a user in. Returns a JWT-Token to authenticate further requests.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login",
+                "parameters": [
+                    {
+                        "description": "The login credentials",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.Login"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/auth.Token"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user password model.",
+                        "schema": {
+                            "$ref": "#/definitions/models.Message"
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid username or password.",
+                        "schema": {
+                            "$ref": "#/definitions/models.Message"
+                        }
+                    },
+                    "412": {
+                        "description": "Invalid totp passcode.",
+                        "schema": {
+                            "$ref": "#/definitions/models.Message"
+                        }
+                    }
+                }
+            }
+        },
+*/
 func (client *ApiClient) Login(username string, password string, totp_passcode string) (string, error) {
 	payload := map[string]string{
 		"username": username,
