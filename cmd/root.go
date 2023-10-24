@@ -21,6 +21,13 @@ var rootCmd = &cobra.Command{
 		if Verbose {
 			fmt.Println("Verbose mode enabled")
 		}
+		client := api.NewApiClient(BaseUrl, "")
+		token, err := client.Login(Username, Password, "")
+		if err != nil {
+			fmt.Println("Error logging in:", err)
+			return
+		}
+		fmt.Println("Logged in with token:", token)
 	},
 }
 
