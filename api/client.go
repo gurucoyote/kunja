@@ -93,3 +93,30 @@ func (client *ApiClient) Delete(apiPath string) (string, error) {
 	}
 	return string(body), nil
 }
+
+func (client *ApiClient) Login(username string, password string, totp_passcode string) (string, error) {
+	payload := map[string]string{
+		"username": username,
+		"password": password,
+		"totp_passcode": totp_passcode,
+	}
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		return "", err
+	}
+	response, err := client.Post("/login", string(payloadBytes))
+	if err != nil {
+		return "", err
+	}
+	var result map[string]string
+	err = json.Unmarshal([]byte(response), &result)
+	if err != nil {
+		return "", err
+	}
+	token, ok := result["token"]
+	if !ok {
+		return "", errors.New("token not found in response")
+	}
+	client.Token = token
+	return token, nil
+}
