@@ -47,7 +47,7 @@ var rootCmd = &cobra.Command{
 			fmt.Println(string(formattedTasks))
 		} else {
 			for _, task := range tasks {
-				fmt.Printf("%d:  %s\n", task.ID, task.Title)
+				fmt.Printf("%d:  %s (Urgency: %.3f)\n", task.ID, task.Title, task.Urgency)
 				if task.Description != "" {
 					fmt.Printf("Description: %s\n", task.Description)
 				}
