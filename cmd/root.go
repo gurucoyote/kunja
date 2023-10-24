@@ -17,6 +17,9 @@ var rootCmd = &cobra.Command{
 	Use:   "kunja",
 	Short: "A CLI client for the Vikunja task management API",
 	Long:  `A CLI client for the Vikunja task management API. It allows you to interact with the Vikunja API from the command line.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("Hello %s\n", Username)
+	},
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if Verbose {
 			fmt.Println("Verbose mode enabled")
