@@ -1,0 +1,14 @@
+1. get_user - GET /user
+2. get_projects - GET /projects
+3. get_project - GET /projects/{project_id}
+4. put_project - PUT /projects
+5. get_buckets - GET /projects/{project_id}/buckets
+6. put_bucket - PUT /projects/{project_id}/buckets
+7. get_labels - GET /labels
+8. put_label - PUT /labels
+9. get_tasks - GET /tasks/all
+10. get_task - GET /tasks/{task_id}
+11. put_task - PUT /projects/{project_id}
+12. post_task - POST /tasks/{task_id}
+13. add_label_to_task - PUT /tasks/{task_id}/labels
+14. remove_label_from_task - DELETE /tasks/{task_id}/labels/{label_id}
