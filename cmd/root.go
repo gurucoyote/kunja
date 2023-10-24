@@ -25,7 +25,9 @@ var rootCmd = &cobra.Command{
 			fmt.Println("Error logging in:", err)
 			return
 		}
+		if Verbose {
 		fmt.Println("Logged in with token:", token)
+	}
 
 		tasks, err := client.GetAllTasks(api.GetAllTasksParams{})
 		if err != nil {
@@ -38,7 +40,7 @@ var rootCmd = &cobra.Command{
 			fmt.Println(string(formattedTasks))
 		} else {
 			for _, task := range tasks {
-				fmt.Printf("ID: %d\nTitle: %s\n", task.ID, task.Title)
+				fmt.Printf("%d:  %s\n", task.ID, task.Title)
 				if task.Description != "" {
 					fmt.Printf("Description: %s\n", task.Description)
 				}
