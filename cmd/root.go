@@ -29,10 +29,17 @@ var rootCmd = &cobra.Command{
 		fmt.Println("Logged in with token:", token)
 	}
 
-		tasks, err := client.GetAllTasks(api.GetAllTasksParams{})
+		allTasks, err := client.GetAllTasks(api.GetAllTasksParams{})
 		if err != nil {
 			fmt.Println("Error getting tasks:", err)
 			return
+		}
+
+		var tasks []api.Task
+		for _, task := range allTasks {
+			if !task.Done {
+				tasks = append(tasks, task)
+			}
 		}
 
 		if Verbose {
