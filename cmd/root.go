@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"kunja/api"
 	"github.com/spf13/cobra"
 )
 
@@ -11,7 +12,7 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "vikunja",
+	Use:   "kunja",
 	Short: "A CLI client for the Vikunja task management API",
 	Long:  `A CLI client for the Vikunja task management API. It allows you to interact with the Vikunja API from the command line.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
