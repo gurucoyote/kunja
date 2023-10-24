@@ -44,6 +44,9 @@ var rootCmd = &cobra.Command{
 				if task.Description != "" {
 					fmt.Printf("Description: %s\n", task.Description)
 				}
+				if !task.DueDate.IsZero() {
+					fmt.Printf("Due Date: %s\n", task.DueDate.Format("2006-01-02"))
+				}
 				fmt.Println()
 			}
 		}
