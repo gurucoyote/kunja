@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"fmt"
-	"kunja/api"
-	"github.com/spf13/cobra"
 	"encoding/json"
+	"fmt"
+	"github.com/spf13/cobra"
+	"kunja/api"
 )
 
 var (
