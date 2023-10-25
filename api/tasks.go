@@ -1,9 +1,9 @@
 package api
 
 import (
-	"strconv"
 	"encoding/json"
 	"github.com/google/go-querystring/query"
+	"strconv"
 	"time"
 )
 
@@ -62,8 +62,9 @@ func (task *Task) getDueDateScore() int {
 		return 0
 	}
 }
-// UpdateTask updates a task. This includes marking it as done. 
-// Assignees you pass will be updated, see their individual endpoints for more details on how this is done. 
+
+// UpdateTask updates a task. This includes marking it as done.
+// Assignees you pass will be updated, see their individual endpoints for more details on how this is done.
 // To update labels, see the description of the endpoint.
 func (client *ApiClient) UpdateTask(ID int, task Task) (Task, error) {
 	taskJson, err := json.Marshal(task)
@@ -84,7 +85,7 @@ func (client *ApiClient) UpdateTask(ID int, task Task) (Task, error) {
 
 // DeleteTask deletes a task from a project. This does not mean "mark it done".
 func (client *ApiClient) DeleteTask(ID int) (string, error) {
-	response, err := client.Delete("/tasks/"+strconv.Itoa(ID))
+	response, err := client.Delete("/tasks/" + strconv.Itoa(ID))
 	if err != nil {
 		return "", err
 	}
@@ -93,7 +94,7 @@ func (client *ApiClient) DeleteTask(ID int) (string, error) {
 
 // GetTask returns one task by its ID
 func (client *ApiClient) GetTask(ID int) (Task, error) {
-	response, err := client.Get("/tasks/"+strconv.Itoa(ID))
+	response, err := client.Get("/tasks/" + strconv.Itoa(ID))
 	if err != nil {
 		return Task{}, err
 	}
