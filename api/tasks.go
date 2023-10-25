@@ -228,3 +228,41 @@ TODO: add a short descriptive comment in go doc style explaining what each metho
             }
         },
 */
+// UpdateTask updates a task. This includes marking it as done. 
+// Assignees you pass will be updated, see their individual endpoints for more details on how this is done. 
+// To update labels, see the description of the endpoint.
+func (client *ApiClient) UpdateTask(ID int, task Task) (Task, error) {
+	response, err := client.Post("/tasks/"+strconv.Itoa(ID), task)
+	if err != nil {
+		return Task{}, err
+	}
+	var updatedTask Task
+	err = json.Unmarshal([]byte(response), &updatedTask)
+	if err != nil {
+		return Task{}, err
+	}
+	return updatedTask, nil
+}
+
+// DeleteTask deletes a task from a project. This does not mean "mark it done".
+func (client *ApiClient) DeleteTask(ID int) (string, error) {
+	response, err := client.Delete("/tasks/"+strconv.Itoa(ID))
+	if err != nil {
+		return "", err
+	}
+	return response, nil
+}
+
+// GetTask returns one task by its ID
+func (client *ApiClient) GetTask(ID int) (Task, error) {
+	response, err := client.Get("/tasks/"+strconv.Itoa(ID))
+	if err != nil {
+		return Task{}, err
+	}
+	var task Task
+	err = json.Unmarshal([]byte(response), &task)
+	if err != nil {
+		return Task{}, err
+	}
+	return task, nil
+}
