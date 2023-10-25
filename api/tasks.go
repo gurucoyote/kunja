@@ -66,7 +66,11 @@ func (task *Task) getDueDateScore() int {
 // Assignees you pass will be updated, see their individual endpoints for more details on how this is done. 
 // To update labels, see the description of the endpoint.
 func (client *ApiClient) UpdateTask(ID int, task Task) (Task, error) {
-	response, err := client.Post("/tasks/"+strconv.Itoa(ID), task)
+	taskJson, err := json.Marshal(task)
+	if err != nil {
+		return Task{}, err
+	}
+	response, err := client.Post("/tasks/"+strconv.Itoa(ID), string(taskJson))
 	if err != nil {
 		return Task{}, err
 	}
