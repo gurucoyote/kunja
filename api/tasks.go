@@ -174,3 +174,19 @@ TODO: implement this api method to create a task
             }
         },
 	*/
+func (client *ApiClient) CreateTask(projectID int, task Task) (Task, error) {
+	taskJson, err := json.Marshal(task)
+	if err != nil {
+		return Task{}, err
+	}
+	response, err := client.Put("/projects/"+strconv.Itoa(projectID)+"/tasks", string(taskJson))
+	if err != nil {
+		return Task{}, err
+	}
+	var createdTask Task
+	err = json.Unmarshal([]byte(response), &createdTask)
+	if err != nil {
+		return Task{}, err
+	}
+	return createdTask, nil
+}
