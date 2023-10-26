@@ -70,6 +70,49 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&Username, "username", "u", "", "username for the API")
 	rootCmd.PersistentFlags().StringVarP(&Password, "password", "p", "", "password for the API")
 	rootCmd.PersistentFlags().StringVarP(&BaseUrl, "baseurl", "b", "", "base URL for the API")
+
+	newCmd := &cobra.Command{
+		Use:   "new",
+		Short: "Create a new task",
+		Long:  `Create a new task using the provided title and due date.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			client := api.NewApiClient(BaseUrl, "")
+			token, err := client.Login(Username, Password, "")
+			if err != nil {
+				fmt.Println("Error logging in:", err)
+				return
+			}
+
+			title := strings.Join(args, " ")
+			due, _ := cmd.Flags().GetString("due")
+
+			var dueDate time.Time
+			if due != "" {
+				dueDate, err = time.Parse("2006-01-02", due)
+				if err != nil {
+					fmt.Println("Error parsing due date:", err)
+					return
+				}
+			}
+
+			task := api.Task{
+				Title:   title,
+				DueDate: dueDate,
+			}
+
+			createdTask, err := client.CreateTask(0, task)
+			if err != nil {
+				fmt.Println("Error creating task:", err)
+				return
+			}
+
+			fmt.Println("Task created successfully:", createdTask.ID)
+		},
+	}
+
+	newCmd.Flags().StringP("due", "d", "", "Due date for the task")
+
+	rootCmd.AddCommand(newCmd)
 }
 
 func Execute() error {
