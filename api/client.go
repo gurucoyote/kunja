@@ -13,6 +13,7 @@ type ApiClient struct {
 	HttpClient *http.Client
 	Token      string
 	ApiBaseUrl string
+	Verbose    bool
 }
 
 func NewApiClient(baseURL string, token string) *ApiClient {
@@ -24,6 +25,9 @@ func NewApiClient(baseURL string, token string) *ApiClient {
 }
 
 func (client *ApiClient) Get(apiPath string) (string, error) {
+	if client.Verbose {
+		fmt.Printf("GET %s\n", client.ApiBaseUrl+apiPath)
+	}
 	req, err := http.NewRequest("GET", client.ApiBaseUrl+apiPath, nil)
 	if err != nil {
 		return "", err
@@ -50,6 +54,9 @@ func (client *ApiClient) Get(apiPath string) (string, error) {
 }
 
 func (client *ApiClient) Post(apiPath string, payload string) (string, error) {
+	if client.Verbose {
+		fmt.Printf("POST %s\n", client.ApiBaseUrl+apiPath)
+	}
 	req, err := http.NewRequest("POST", client.ApiBaseUrl+apiPath, bytes.NewBuffer([]byte(payload)))
 	if err != nil {
 		return "", err
@@ -75,6 +82,9 @@ func (client *ApiClient) Post(apiPath string, payload string) (string, error) {
 }
 
 func (client *ApiClient) Put(apiPath string, payload string) (string, error) {
+	if client.Verbose {
+		fmt.Printf("PUT %s\n", client.ApiBaseUrl+apiPath)
+	}
 	req, err := http.NewRequest("PUT", client.ApiBaseUrl+apiPath, bytes.NewBuffer([]byte(payload)))
 	if err != nil {
 		return "", err
@@ -100,6 +110,9 @@ func (client *ApiClient) Put(apiPath string, payload string) (string, error) {
 }
 
 func (client *ApiClient) Delete(apiPath string) (string, error) {
+	if client.Verbose {
+		fmt.Printf("DELETE %s\n", client.ApiBaseUrl+apiPath)
+	}
 	req, err := http.NewRequest("DELETE", client.ApiBaseUrl+apiPath, nil)
 	if err != nil {
 		return "", err
