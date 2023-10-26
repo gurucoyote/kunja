@@ -75,3 +75,11 @@ func init() {
 func Execute() error {
 	return rootCmd.Execute()
 }
+
+// TODO: create a new sub command called 'new'
+// - this will create a new task using the createTask api method
+// - the  api method takes a Task struct as an argument, which we will fill with user supplied info:
+// - the sub command creates an empty task struct, and fills this with the info we collect from the user, leaving blank what we do not have
+// The command takes one or more arguments, these will be concatinated into one string and used for the Title field of the task
+// The comamnd takes a cobra flag --due as a string, default is "". If this is set, parse into datetime and use for the DueDate field of the task
+// Assume 0 for the ProjectId for now
