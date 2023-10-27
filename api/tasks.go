@@ -179,7 +179,7 @@ func (client *ApiClient) CreateTask(projectID int, task Task) (Task, error) {
 	if err != nil {
 		return Task{}, err
 	}
-	response, err := client.Put("/projects/"+strconv.Itoa(projectID)+"/tasks", string(taskJson))
+	response, err := client.Put("/projects/"+strconv.Itoa(projectID), string(taskJson))// +"/tasks"
 	if err != nil {
 		return Task{}, err
 	}
