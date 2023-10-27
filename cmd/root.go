@@ -16,15 +16,15 @@ var (
 	Username string
 	Password string
 	BaseUrl  string
-)
+	)
 
 var rootCmd = &cobra.Command{
 	Use:   "kunja",
 	Short: "A CLI client for the Vikunja task management API",
 	Long:  `A CLI client for the Vikunja task management API. It allows you to interact with the Vikunja API from the command line.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		client := api.NewApiClient(BaseUrl, "")
-		token, err := client.Login(Username, Password, "")
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		ApiClient = api.NewApiClient(BaseUrl, "")
+		token, err := ApiClient.Login(Username, Password, "")
 		if err != nil {
 			fmt.Println("Error logging in:", err)
 			return
@@ -33,7 +33,9 @@ var rootCmd = &cobra.Command{
 			fmt.Println("Logged in with token:", token)
 		}
 
-		allTasks, err := client.GetAllTasks(api.GetAllTasksParams{})
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		allTasks, err := ApiClient.GetAllTasks(api.GetAllTasksParams{})
 		if err != nil {
 			fmt.Println("Error getting tasks:", err)
 			return
@@ -60,11 +62,6 @@ var rootCmd = &cobra.Command{
 				}
 				// fmt.Println()
 			}
-		}
-	},
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		if Verbose {
-			fmt.Println("Verbose mode enabled")
 		}
 	},
 }
