@@ -16,7 +16,8 @@ var (
 	Username string
 	Password string
 	BaseUrl  string
-	)
+	ApiClient *api.ApiClient
+)
 
 var rootCmd = &cobra.Command{
 	Use:   "kunja",
@@ -32,7 +33,6 @@ var rootCmd = &cobra.Command{
 		if Verbose {
 			fmt.Println("Logged in with token:", token)
 		}
-
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		allTasks, err := ApiClient.GetAllTasks(api.GetAllTasksParams{})
