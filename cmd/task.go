@@ -69,6 +69,8 @@ var doneCmd = &cobra.Command{
 	},
 }
 
+import "gopkg.in/yaml.v2"
+
 var editCmd = &cobra.Command{
 	Use:   "edit",
 	Short: "Edit a task",
@@ -81,7 +83,12 @@ var editCmd = &cobra.Command{
 			fmt.Println("Error getting task:", err)
 			return
 		}
-		fmt.Println("Task title:", task.Title)
+		yamlTask, err := yaml.Marshal(&task)
+		if err != nil {
+			fmt.Println("Error marshaling task to YAML:", err)
+			return
+		}
+		fmt.Println(string(yamlTask))
 	},
 }
 
