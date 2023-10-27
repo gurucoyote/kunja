@@ -114,10 +114,13 @@ var newCmd = &cobra.Command{
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
-	rootCmd.PersistentFlags().StringVarP(&Username, "username", "u", "", "username for the API")
-	rootCmd.PersistentFlags().StringVarP(&Password, "password", "p", "", "password for the API")
-	rootCmd.PersistentFlags().StringVarP(&BaseUrl, "baseurl", "b", "", "base URL for the API")
+	rootCmd.PersistentFlags().StringVarP(&Username, "username", "u", "", "username for the API (can also be set with KUNJA_USERNAME environment variable)")
+	rootCmd.PersistentFlags().StringVarP(&Password, "password", "p", "", "password for the API (can also be set with KUNJA_PASSWORD environment variable)")
+	rootCmd.PersistentFlags().StringVarP(&BaseUrl, "baseurl", "b", "", "base URL for the API (can also be set with KUNJA_BASEURL environment variable)")
 	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
+	viper.BindPFlag("username", rootCmd.PersistentFlags().Lookup("username"))
+	viper.BindPFlag("password", rootCmd.PersistentFlags().Lookup("password"))
+	viper.BindPFlag("baseurl", rootCmd.PersistentFlags().Lookup("baseurl"))
 
 	newCmd.Flags().StringP("due", "d", "", "Due date for the task")
 	rootCmd.AddCommand(newCmd)
