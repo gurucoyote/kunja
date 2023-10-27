@@ -15,6 +15,7 @@ var (
 	Password  string
 	BaseUrl   string
 	ApiClient *api.ApiClient
+	ShowAll   bool
 )
 
 var rootCmd = &cobra.Command{
@@ -39,12 +40,15 @@ var rootCmd = &cobra.Command{
 			return
 		}
 
-		var tasks []api.Task
-		for _, task := range allTasks {
-			// TODO: introduce a boolean comamndline flag -a|--all that will show all tasks if set
-			if !task.Done {
-				tasks = append(tasks, task)
+		if !ShowAll {
+			var tasks []api.Task
+			for _, task := range allTasks {
+				if !task.Done {
+					tasks = append(tasks, task)
+				}
 			}
+		} else {
+			tasks = allTasks
 		}
 
 		if Verbose {
@@ -71,9 +75,11 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&Username, "username", "u", "", "username for the API (can also be set with KUNJA_USERNAME environment variable)")
 	rootCmd.PersistentFlags().StringVarP(&Password, "password", "p", "", "password for the API (can also be set with KUNJA_PASSWORD environment variable)")
 	rootCmd.PersistentFlags().StringVarP(&BaseUrl, "baseurl", "b", "", "base URL for the API (can also be set with KUNJA_BASEURL environment variable)")
+	rootCmd.PersistentFlags().BoolVarP(&ShowAll, "all", "a", false, "show all tasks")
 	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 	viper.BindPFlag("username", rootCmd.PersistentFlags().Lookup("username"))
 	viper.BindPFlag("password", rootCmd.PersistentFlags().Lookup("password"))
 	viper.BindPFlag("baseurl", rootCmd.PersistentFlags().Lookup("baseurl"))
+	viper.BindPFlag("all", rootCmd.PersistentFlags().Lookup("all"))
 
 }
