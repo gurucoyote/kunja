@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"kunja/api"
-	"strings"
-	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -65,48 +63,6 @@ var rootCmd = &cobra.Command{
 		}
 	},
 }
-var newCmd = &cobra.Command{
-	Use:   "new",
-	Short: "Create a new task",
-	Long:  `Create a new task using the provided title and due date.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		client := api.NewApiClient(BaseUrl, "")
-		_, err := client.Login(Username, Password, "")
-		if err != nil {
-			fmt.Println("Error logging in:", err)
-			return
-		}
-
-		title := strings.Join(args, " ")
-		due, _ := cmd.Flags().GetString("due")
-
-		var dueDate time.Time
-		if due != "" {
-			dueDate, err = time.Parse("2006-01-02", due)
-			if err != nil {
-				fmt.Println("Error parsing due date:", err)
-				return
-			}
-		}
-
-		task := api.Task{
-			Title:   title,
-			DueDate: dueDate,
-		}
-
-		projectId := 1
-		if Verbose {
-			client.Verbose = true
-		}
-		createdTask, err := client.CreateTask(projectId, task)
-		if err != nil {
-			fmt.Println("Error creating task:", err)
-			return
-		}
-
-		fmt.Println("Task created successfully:", createdTask.ID)
-	},
-}
 
 func init() {
 	cobra.OnInitialize(initConfig)
@@ -119,6 +75,4 @@ func init() {
 	viper.BindPFlag("password", rootCmd.PersistentFlags().Lookup("password"))
 	viper.BindPFlag("baseurl", rootCmd.PersistentFlags().Lookup("baseurl"))
 
-	newCmd.Flags().StringP("due", "d", "", "Due date for the task")
-	rootCmd.AddCommand(newCmd)
 }
