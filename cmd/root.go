@@ -40,8 +40,8 @@ var rootCmd = &cobra.Command{
 			return
 		}
 
+		var tasks []api.Task
 		if !ShowAll {
-			var tasks []api.Task
 			for _, task := range allTasks {
 				if !task.Done {
 					tasks = append(tasks, task)
