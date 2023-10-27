@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 )
 
 var newCmd = &cobra.Command{
@@ -68,8 +69,6 @@ var doneCmd = &cobra.Command{
 		fmt.Println("Task marked as done successfully")
 	},
 }
-
-import "gopkg.in/yaml.v2"
 
 var editCmd = &cobra.Command{
 	Use:   "edit",
