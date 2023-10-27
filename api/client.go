@@ -39,7 +39,7 @@ func (client *ApiClient) Get(apiPath string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		var result map[string]string
 		body, _ := ioutil.ReadAll(resp.Body)
 		json.Unmarshal(body, &result)
@@ -68,7 +68,7 @@ func (client *ApiClient) Post(apiPath string, payload string) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		var result map[string]string
 		body, _ := ioutil.ReadAll(resp.Body)
 		json.Unmarshal(body, &result)
@@ -96,7 +96,7 @@ func (client *ApiClient) Put(apiPath string, payload string) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		var result map[string]string
 		body, _ := ioutil.ReadAll(resp.Body)
 		json.Unmarshal(body, &result)
@@ -123,7 +123,7 @@ func (client *ApiClient) Delete(apiPath string) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		var result map[string]string
 		body, _ := ioutil.ReadAll(resp.Body)
 		json.Unmarshal(body, &result)
