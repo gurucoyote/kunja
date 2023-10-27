@@ -55,4 +55,40 @@ var newCmd = &cobra.Command{
 func init() {
 	newCmd.Flags().StringP("due", "d", "", "Due date for the task")
 	rootCmd.AddCommand(newCmd)
+
+	doneCmd := &cobra.Command{
+		Use:   "done",
+		Short: "Mark a task as done",
+		Long:  `Mark a task as done using the provided task ID.`,
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			client := api.NewApiClient(BaseUrl, "")
+			taskID, _ := strconv.Atoi(args[0])
+			task, err := client.GetTask(taskID)
+			if err != nil {
+				fmt.Println("Error getting task:", err)
+				return
+			}
+			fmt.Println("Task title:", task.Title)
+		},
+	}
+	rootCmd.AddCommand(doneCmd)
+
+	editCmd := &cobra.Command{
+		Use:   "edit",
+		Short: "Edit a task",
+		Long:  `Edit a task using the provided task ID.`,
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			client := api.NewApiClient(BaseUrl, "")
+			taskID, _ := strconv.Atoi(args[0])
+			task, err := client.GetTask(taskID)
+			if err != nil {
+				fmt.Println("Error getting task:", err)
+				return
+			}
+			fmt.Println("Task title:", task.Title)
+		},
+	}
+	rootCmd.AddCommand(editCmd)
 }
