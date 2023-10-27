@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"kunja/api"
+	"strings"
+	"time"
 )
 
 var (
@@ -77,7 +79,7 @@ func init() {
 		Long:  `Create a new task using the provided title and due date.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			client := api.NewApiClient(BaseUrl, "")
-			token, err := client.Login(Username, Password, "")
+			_, err := client.Login(Username, Password, "")
 			if err != nil {
 				fmt.Println("Error logging in:", err)
 				return
@@ -100,7 +102,11 @@ func init() {
 				DueDate: dueDate,
 			}
 
-			createdTask, err := client.CreateTask(0, task)
+			projectId := 1
+			if Verbose {
+				client.Verbose = true
+			}
+			createdTask, err := client.CreateTask(projectId, task)
 			if err != nil {
 				fmt.Println("Error creating task:", err)
 				return
