@@ -41,6 +41,7 @@ var rootCmd = &cobra.Command{
 
 		var tasks []api.Task
 		for _, task := range allTasks {
+			// TODO: introduce a boolean comamndline flag -a|--all that will show all tasks if set
 			if !task.Done {
 				tasks = append(tasks, task)
 			}
