@@ -63,6 +63,9 @@ var rootCmd = &cobra.Command{
 				if !task.DueDate.IsZero() {
 					fmt.Printf("Due Date: %s\n", task.DueDate.Format("2006-01-02"))
 				}
+				if task.Done {
+					fmt.Printf("Done At: %s\n", task.DoneAt.Format("2006-01-02 15:04:05"))
+				}
 				// fmt.Println()
 			}
 		}
