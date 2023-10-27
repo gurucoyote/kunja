@@ -12,10 +12,10 @@ import (
 )
 
 var (
-	Verbose  bool
-	Username string
-	Password string
-	BaseUrl  string
+	Verbose   bool
+	Username  string
+	Password  string
+	BaseUrl   string
 	ApiClient *api.ApiClient
 )
 
@@ -24,8 +24,8 @@ var rootCmd = &cobra.Command{
 	Short: "A CLI client for the Vikunja task management API",
 	Long:  `A CLI client for the Vikunja task management API. It allows you to interact with the Vikunja API from the command line.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		ApiClient = api.NewApiClient(BaseUrl, "")
-		token, err := ApiClient.Login(Username, Password, "")
+		ApiClient = api.NewApiClient(viper.GetString("baseUrl"), "")
+		token, err := ApiClient.Login(viper.GetString("username"), viper.GetString("password"), "")
 		if err != nil {
 			fmt.Println("Error logging in:", err)
 			return

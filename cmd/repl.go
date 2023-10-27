@@ -59,7 +59,7 @@ func Execute() {
 }
 
 var ExitCmd = &cobra.Command{
-	Use:     "/exit",
+	Use:     "exit",
 	Aliases: []string{"q", "Q", "bye"},
 	Short:   "Exit the application",
 	Long:    `This command will exit the application.`,
