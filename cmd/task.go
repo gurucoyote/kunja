@@ -113,6 +113,22 @@ var assignedCmd = &cobra.Command{
 	},
 }
 
+var usersCmd = &cobra.Command{
+	Use:   "users",
+	Short: "List all users",
+	Long:  `List all the users from the API.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		users, err := ApiClient.GetAllUsers()
+		if err != nil {
+			fmt.Println("Error retrieving users:", err)
+			return
+		}
+		for _, user := range users {
+			fmt.Printf("ID: %d, Username: %s, Name: %s\n", user.ID, user.Username, user.Name)
+		}
+	},
+}
+
 func init() {
 	newCmd.Flags().StringP("due", "d", "", "Due date for the task")
 	rootCmd.AddCommand(newCmd)
@@ -120,4 +136,5 @@ func init() {
 	rootCmd.AddCommand(doneCmd)
 	rootCmd.AddCommand(editCmd)
 	rootCmd.AddCommand(assignedCmd)
+	rootCmd.AddCommand(usersCmd)
 }
