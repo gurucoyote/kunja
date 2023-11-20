@@ -190,3 +190,23 @@ func (client *ApiClient) CreateTask(projectID int, task Task) (Task, error) {
 	}
 	return createdTask, nil
 }
+// AssignUserToTask assigns a user to a task by making a PUT request to the /tasks/{taskID}/assignees endpoint.
+func (client *ApiClient) AssignUserToTask(taskID int, userID int) (string, error) {
+    // Construct the API endpoint with the taskID
+    apiEndpoint := fmt.Sprintf("/tasks/%d/assignees", taskID)
+    
+    // Create the payload with the userID
+    payload := map[string]int{"user_id": userID}
+    payloadBytes, err := json.Marshal(payload)
+    if err != nil {
+        return "", err
+    }
+    
+    // Make the PUT request
+    response, err := client.Put(apiEndpoint, string(payloadBytes))
+    if err != nil {
+        return "", err
+    }
+    
+    return response, nil
+}
