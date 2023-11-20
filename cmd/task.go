@@ -91,10 +91,33 @@ var editCmd = &cobra.Command{
 	},
 }
 
+var assignedCmd = &cobra.Command{
+	Use:   "assigned",
+	Short: "List assignees of a task",
+	Long:  `List all the assignees assigned to a task using the provided task ID.`,
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		taskID, err := strconv.Atoi(args[0])
+		if err != nil {
+			fmt.Println("Error converting task ID:", err)
+			return
+		}
+		assignees, err := ApiClient.GetTaskAssignees(taskID)
+		if err != nil {
+			fmt.Println("Error getting assignees for task:", err)
+			return
+		}
+		for _, assignee := range assignees {
+			fmt.Printf("ID: %d, Username: %s, Name: %s\n", assignee.ID, assignee.Username, assignee.Name)
+		}
+	},
+}
+
 func init() {
 	newCmd.Flags().StringP("due", "d", "", "Due date for the task")
 	rootCmd.AddCommand(newCmd)
 
 	rootCmd.AddCommand(doneCmd)
 	rootCmd.AddCommand(editCmd)
+	rootCmd.AddCommand(assignedCmd)
 }
