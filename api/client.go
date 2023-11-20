@@ -173,6 +173,13 @@ func (client *ApiClient) GetAllUsers() ([]User, error) {
 		return nil, err
 	}
 	var users []User
+	if client.Verbose {
+		var prettyJSON bytes.Buffer
+		err = json.Indent(&prettyJSON, []byte(response), "", "  ")
+		if err == nil {
+			fmt.Println("Raw JSON response:", prettyJSON.String())
+		}
+	}
 	err = json.Unmarshal([]byte(response), &users)
 	if err != nil {
 		return nil, err
