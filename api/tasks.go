@@ -210,3 +210,20 @@ func (client *ApiClient) AssignUserToTask(taskID int, userID int) (string, error
     
     return response, nil
 }
+// GetTaskAssignees retrieves all assignees for a given task.
+func (client *ApiClient) GetTaskAssignees(taskID int) ([]User, error) {
+    apiEndpoint := fmt.Sprintf("/tasks/%d/assignees", taskID)
+
+    response, err := client.Get(apiEndpoint)
+    if err != nil {
+        return nil, err
+    }
+
+    var assignees []User
+    err = json.Unmarshal([]byte(response), &assignees)
+    if err != nil {
+        return nil, err
+    }
+
+    return assignees, nil
+}
