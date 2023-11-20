@@ -165,6 +165,7 @@ func (client *ApiClient) Login(username string, password string, totp_passcode s
 	client.Token = token
 	return token, nil
 }
+
 // GetAllUsers retrieves all existing users.
 func (client *ApiClient) GetAllUsers() ([]User, error) {
 	response, err := client.Get("/users")

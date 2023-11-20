@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/google/go-querystring/query"
 	"strconv"
 	"time"
@@ -190,40 +191,42 @@ func (client *ApiClient) CreateTask(projectID int, task Task) (Task, error) {
 	}
 	return createdTask, nil
 }
+
 // AssignUserToTask assigns a user to a task by making a PUT request to the /tasks/{taskID}/assignees endpoint.
 func (client *ApiClient) AssignUserToTask(taskID int, userID int) (string, error) {
-    // Construct the API endpoint with the taskID
-    apiEndpoint := fmt.Sprintf("/tasks/%d/assignees", taskID)
-    
-    // Create the payload with the userID
-    payload := map[string]int{"user_id": userID}
-    payloadBytes, err := json.Marshal(payload)
-    if err != nil {
-        return "", err
-    }
-    
-    // Make the PUT request
-    response, err := client.Put(apiEndpoint, string(payloadBytes))
-    if err != nil {
-        return "", err
-    }
-    
-    return response, nil
+	// Construct the API endpoint with the taskID
+	apiEndpoint := fmt.Sprintf("/tasks/%d/assignees", taskID)
+
+	// Create the payload with the userID
+	payload := map[string]int{"user_id": userID}
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		return "", err
+	}
+
+	// Make the PUT request
+	response, err := client.Put(apiEndpoint, string(payloadBytes))
+	if err != nil {
+		return "", err
+	}
+
+	return response, nil
 }
+
 // GetTaskAssignees retrieves all assignees for a given task.
 func (client *ApiClient) GetTaskAssignees(taskID int) ([]User, error) {
-    apiEndpoint := fmt.Sprintf("/tasks/%d/assignees", taskID)
+	apiEndpoint := fmt.Sprintf("/tasks/%d/assignees", taskID)
 
-    response, err := client.Get(apiEndpoint)
-    if err != nil {
-        return nil, err
-    }
+	response, err := client.Get(apiEndpoint)
+	if err != nil {
+		return nil, err
+	}
 
-    var assignees []User
-    err = json.Unmarshal([]byte(response), &assignees)
-    if err != nil {
-        return nil, err
-    }
+	var assignees []User
+	err = json.Unmarshal([]byte(response), &assignees)
+	if err != nil {
+		return nil, err
+	}
 
-    return assignees, nil
+	return assignees, nil
 }
