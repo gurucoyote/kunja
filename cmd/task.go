@@ -70,10 +70,10 @@ var doneCmd = &cobra.Command{
 	},
 }
 
-var editCmd = &cobra.Command{
-	Use:   "edit",
-	Short: "Edit a task",
-	Long:  `Edit a task using the provided task ID.`,
+var showCmd = &cobra.Command{
+	Use:   "show",
+	Short: "Show task details",
+	Long:  `Show the details of a task in raw indented JSON format.`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		taskID, _ := strconv.Atoi(args[0])
@@ -82,13 +82,17 @@ var editCmd = &cobra.Command{
 			fmt.Println("Error getting task:", err)
 			return
 		}
-		yamlTask, err := yaml.Marshal(&task)
+		jsonTask, err := json.MarshalIndent(&task, "", "  ")
 		if err != nil {
-			fmt.Println("Error marshaling task to YAML:", err)
+			fmt.Println("Error marshaling task to JSON:", err)
 			return
 		}
-		fmt.Println(string(yamlTask))
+		fmt.Println(string(jsonTask))
 	},
+}
+
+func init() {
+	rootCmd.AddCommand(showCmd)
 }
 
 var assignedCmd = &cobra.Command{
