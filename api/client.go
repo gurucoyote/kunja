@@ -168,7 +168,7 @@ func (client *ApiClient) Login(username string, password string, totp_passcode s
 
 // GetAllUsers retrieves all existing users.
 func (client *ApiClient) GetAllUsers() ([]User, error) {
-	response, err := client.Get("/users")
+	response, err := client.Get("/users?include=details")
 	if err != nil {
 		return nil, err
 	}
