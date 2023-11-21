@@ -45,7 +45,7 @@ type Task struct {
 	Description    string         `json:"description"`
 	Priority       int            `json:"priority"`
 	IsFavorite     bool           `json:"is_favorite"`
-	DueDate        string         `json:"due_date"`
+	DueDate        time.Time      `json:"due_date"` // Changed from string to time.Time
 	Reminders      []TaskReminder `json:"reminders"`
 	RepeatMode     int            `json:"repeat_mode"`
 	RepeatAfter    int            `json:"repeat_after"`
@@ -61,7 +61,7 @@ type Task struct {
 	KanbanPosition float64        `json:"kanban_position"`
 	Created        string         `json:"created"`
 	Updated        string         `json:"updated"`
-	// Note: Urgency field removed as it does not exist in the API documentation
+	Urgency        float64        `json:"urgency"` // Added Urgency field
 }
 type GetAllTasksParams struct {
 	Page               int    `json:"page,omitempty"`
