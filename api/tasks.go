@@ -95,7 +95,7 @@ func (client *ApiClient) DeleteTask(ID int) (string, error) {
 
 // GetTask returns one task by its ID
 func (client *ApiClient) GetTask(ID int) (Task, error) {
-	response, err := client.Get("/tasks/" + strconv.Itoa(ID))
+	response, err := client.Get("/tasks/" + strconv.Itoa(ID) + "?include=project,label_objects,assignees")
 	if err != nil {
 		return Task{}, err
 	}
@@ -104,6 +104,7 @@ func (client *ApiClient) GetTask(ID int) (Task, error) {
 	if err != nil {
 		return Task{}, err
 	}
+	task.CalculateUrgency()
 	return task, nil
 }
 
