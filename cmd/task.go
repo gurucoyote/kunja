@@ -91,8 +91,28 @@ var showCmd = &cobra.Command{
 	},
 }
 
+var projectsCmd = &cobra.Command{
+	Use:   "projects",
+	Short: "List all projects",
+	Long:  `List all the projects from the API.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		projects, err := ApiClient.GetAllProjects()
+		if err != nil {
+			fmt.Println("Error retrieving projects:", err)
+			return
+		}
+		jsonProjects, err := json.MarshalIndent(&projects, "", "  ")
+		if err != nil {
+			fmt.Println("Error marshaling projects to JSON:", err)
+			return
+		}
+		fmt.Println(string(jsonProjects))
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(showCmd)
+	rootCmd.AddCommand(projectsCmd)
 }
 
 var assignedCmd = &cobra.Command{
