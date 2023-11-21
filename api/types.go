@@ -45,23 +45,23 @@ type Task struct {
 	Description    string         `json:"description"`
 	Priority       int            `json:"priority"`
 	IsFavorite     bool           `json:"is_favorite"`
-	DueDate        time.Time      `json:"due_date"`
+	DueDate        string         `json:"due_date"`
 	Reminders      []TaskReminder `json:"reminders"`
 	RepeatMode     int            `json:"repeat_mode"`
-	RepeatAfter    time.Duration  `json:"repeat_after"`
-	StartDate      time.Time      `json:"start_date"`
-	EndDate        time.Time      `json:"end_date"`
+	RepeatAfter    int            `json:"repeat_after"`
+	StartDate      string         `json:"start_date"`
+	EndDate        string         `json:"end_date"`
 	PercentDone    float64        `json:"percent_done"`
 	Done           bool           `json:"done"`
-	DoneAt         time.Time      `json:"done_at"`
-	LabelObjects   []Label        `json:"label_objects"`
-	Project        Project        `json:"project"`
-	Position       int            `json:"position"`
+	DoneAt         string         `json:"done_at"`
+	Labels         []Label        `json:"labels"`
+	ProjectID      int            `json:"project_id"`
+	Position       float64        `json:"position"`
 	BucketID       int            `json:"bucket_id"`
-	KanbanPosition int            `json:"kanban_position"`
-	Created        time.Time      `json:"created"`
-	Updated        time.Time      `json:"updated"`
-	Urgency        float64        `json:"-"`
+	KanbanPosition float64        `json:"kanban_position"`
+	Created        string         `json:"created"`
+	Updated        string         `json:"updated"`
+	// Note: Urgency field removed as it does not exist in the API documentation
 }
 type GetAllTasksParams struct {
 	Page               int    `json:"page,omitempty"`
