@@ -39,6 +39,9 @@ var rootCmd = &cobra.Command{
 			fmt.Println("Error getting tasks:", err)
 			return
 		}
+		if Verbose 
+		//todo output the returned tasks as an indented json string
+
 
 		var tasks []api.Task
 		if !ShowAll {
