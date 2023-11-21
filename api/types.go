@@ -53,7 +53,7 @@ type Task struct {
 	EndDate        string         `json:"end_date"`
 	PercentDone    float64        `json:"percent_done"`
 	Done           bool           `json:"done"`
-	DoneAt         string         `json:"done_at"`
+	DoneAt         time.Time      `json:"done_at"`
 	Labels         []Label        `json:"labels"`
 	ProjectID      int            `json:"project_id"`
 	Position       float64        `json:"position"`
