@@ -167,12 +167,12 @@ func (client *ApiClient) Login(username string, password string, totp_passcode s
 }
 
 // GetAllUsers retrieves all existing users.
-func (client *ApiClient) GetAllUsers() ([]User, error) {
-	response, err := client.Get("/users")
+func (client *ApiClient) GetAllProjects() ([]Project, error) {
+	response, err := client.Get("/projects")
 	if err != nil {
 		return nil, err
 	}
-	var users []User
+	var projects []Project
 	if client.Verbose {
 		var prettyJSON bytes.Buffer
 		err = json.Indent(&prettyJSON, []byte(response), "", "  ")
@@ -180,9 +180,9 @@ func (client *ApiClient) GetAllUsers() ([]User, error) {
 			fmt.Println("Raw JSON response:", prettyJSON.String())
 		}
 	}
-	err = json.Unmarshal([]byte(response), &users)
+	err = json.Unmarshal([]byte(response), &projects)
 	if err != nil {
 		return nil, err
 	}
-	return users, nil
+	return projects, nil
 }
