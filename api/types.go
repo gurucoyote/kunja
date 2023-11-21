@@ -2,22 +2,7 @@ package api
 
 import "time"
 
-type User struct {
-	ID               int    `json:"id"`
-	Username         string `json:"username"`
-	Name             string `json:"name"`
-	DefaultProjectID int    `json:"default_project_id"`
-}
 
-type Project struct {
-	ID               int       `json:"id"`
-	Title            string    `json:"title"`
-	Description      string    `json:"description"`
-	IsFavorite       bool      `json:"is_favorite"`
-	IsArchived       bool      `json:"is_archived"`
-	ParentProjectID  int       `json:"parent_project_id"`
-	AncestorProjects []Project `json:"ancestor_projects"`
-}
 
 type Bucket struct {
 	ID           int    `json:"id"`
@@ -94,10 +79,6 @@ type Project struct {
 	HexColor             string    `json:"hex_color,omitempty"`
 }
 
-// User represents a user in the Vikunja API.
-type User struct {
-	// Add user fields here
-}
 // User represents a user in the Vikunja API.
 type User struct {
 	ID               int    `json:"id"`
