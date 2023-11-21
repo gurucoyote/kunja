@@ -98,3 +98,10 @@ type Project struct {
 type User struct {
 	// Add user fields here
 }
+// User represents a user in the Vikunja API.
+type User struct {
+	ID               int    `json:"id"`
+	Username         string `json:"username"`
+	Name             string `json:"name"`
+	DefaultProjectID int    `json:"default_project_id"`
+}
