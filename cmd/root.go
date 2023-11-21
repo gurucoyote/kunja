@@ -39,8 +39,10 @@ var rootCmd = &cobra.Command{
 			fmt.Println("Error getting tasks:", err)
 			return
 		}
-		if Verbose 
-		//todo output the returned tasks as an indented json string
+		if Verbose {
+			formattedTasks, _ := json.MarshalIndent(allTasks, "", "  ")
+			fmt.Println(string(formattedTasks))
+		}
 
 
 		var tasks []api.Task
