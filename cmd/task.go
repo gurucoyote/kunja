@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"kunja/api"
 	"strconv"
@@ -8,7 +9,6 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 )
 
 var newCmd = &cobra.Command{
@@ -138,7 +138,7 @@ func init() {
 	rootCmd.AddCommand(newCmd)
 
 	rootCmd.AddCommand(doneCmd)
-	rootCmd.AddCommand(editCmd)
+	// rootCmd.AddCommand(editCmd) // This line should be removed or uncommented if editCmd is defined elsewhere
 	rootCmd.AddCommand(assignedCmd)
 	rootCmd.AddCommand(usersCmd)
 }
