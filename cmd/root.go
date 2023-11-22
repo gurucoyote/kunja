@@ -44,7 +44,6 @@ var rootCmd = &cobra.Command{
 			fmt.Println(string(formattedTasks))
 		}
 
-
 		var tasks []api.Task
 		if !ShowAll {
 			for _, task := range allTasks {
