@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strconv" // Added import for strconv
 	"kunja/api"
 
@@ -56,22 +57,25 @@ var rootCmd = &cobra.Command{
 			tasks = allTasks
 		}
 
-		if Verbose {
-			formattedTasks, _ := json.MarshalIndent(tasks, "", "  ")
-			fmt.Println(string(formattedTasks))
-		} else {
-			for _, task := range tasks {
-				fmt.Printf("%d:  %s (Urgency: %.3f)\n", task.ID, task.Title, task.Urgency)
-				if task.Description != "" {
-					fmt.Printf("Description: %s\n", task.Description)
-				}
-				if !task.DueDate.IsZero() {
-					fmt.Printf("Due Date: %s\n", task.DueDate.Format("2006-01-02"))
-				}
-				if !task.DoneAt.IsZero() {
-					fmt.Printf("Done At: %s\n", task.DoneAt.Format("2006-01-02 15:04:05"))
-				}
-				// fmt.Println()
+		// Sort tasks by urgency in descending order, then by ID in descending order
+		sort.Slice(tasks, func(i, j int) bool {
+			if tasks[i].Urgency == tasks[j].Urgency {
+				return tasks[i].ID > tasks[j].ID // Descending ID
+			}
+			return tasks[i].Urgency > tasks[j].Urgency // Descending urgency
+		})
+
+		// Output tasks
+		for _, task := range tasks {
+			fmt.Printf("%d:  %s (Urgency: %.3f)\n", task.ID, task.Title, task.Urgency)
+			if task.Description != "" {
+				fmt.Printf("Description: %s\n", task.Description)
+			}
+			if !task.DueDate.IsZero() {
+				fmt.Printf("Due Date: %s\n", task.DueDate.Format("2006-01-02"))
+			}
+			if !task.DoneAt.IsZero() {
+				fmt.Printf("Done At: %s\n", task.DoneAt.Format("2006-01-02 15:04:05"))
 			}
 		}
 	},
