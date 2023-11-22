@@ -2,8 +2,6 @@ package api
 
 import "time"
 
-
-
 type Bucket struct {
 	ID           int    `json:"id"`
 	Title        string `json:"title"`
@@ -60,23 +58,24 @@ type GetAllTasksParams struct {
 	FilterConcat       string `json:"filter_concat,omitempty"`
 	FilterIncludeNulls string `json:"filter_include_nulls,omitempty"`
 }
+
 // Project represents a project in the Vikunja API.
 type Project struct {
-	ID                   int       `json:"id"`
-	Title                string    `json:"title"`
-	Description          string    `json:"description"`
-	IsFavorite           bool      `json:"is_favorite"`
-	IsArchived           bool      `json:"is_archived"`
-	ParentProjectID      int       `json:"parent_project_id"`
-	AncestorProjects     []Project `json:"ancestor_projects"`
-	Created              string    `json:"created"`
-	Updated              string    `json:"updated"`
-	Owner                User      `json:"owner"`
-	Position             float64   `json:"position"`
-	Identifier           string    `json:"identifier"`
-	BackgroundBlurHash   string    `json:"background_blur_hash,omitempty"`
+	ID                    int       `json:"id"`
+	Title                 string    `json:"title"`
+	Description           string    `json:"description"`
+	IsFavorite            bool      `json:"is_favorite"`
+	IsArchived            bool      `json:"is_archived"`
+	ParentProjectID       int       `json:"parent_project_id"`
+	AncestorProjects      []Project `json:"ancestor_projects"`
+	Created               string    `json:"created"`
+	Updated               string    `json:"updated"`
+	Owner                 User      `json:"owner"`
+	Position              float64   `json:"position"`
+	Identifier            string    `json:"identifier"`
+	BackgroundBlurHash    string    `json:"background_blur_hash,omitempty"`
 	BackgroundInformation *string   `json:"background_information,omitempty"`
-	HexColor             string    `json:"hex_color,omitempty"`
+	HexColor              string    `json:"hex_color,omitempty"`
 }
 
 // User represents a user in the Vikunja API.
