@@ -90,3 +90,30 @@ func init() {
 	viper.BindPFlag("all", rootCmd.PersistentFlags().Lookup("all"))
 
 }
+// projectUsersCmd represents the project-users command
+var projectUsersCmd = &cobra.Command{
+	Use:   "project-users [PROJECT_ID]",
+	Short: "List all users a project is shared with",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		projectID, err := strconv.Atoi(args[0])
+		if err != nil {
+			fmt.Println("Error: Project ID must be a number")
+			return
+		}
+
+		users, err := ApiClient.GetProjectUsers(projectID)
+		if err != nil {
+			fmt.Printf("Error retrieving project users: %s\n", err)
+			return
+		}
+
+		for _, user := range users {
+			fmt.Printf("ID: %d, Username: %s, Right: %d\n", user.ID, user.Username, user.Right)
+		}
+	},
+}
+
+func init() {
+	rootCmd.AddCommand(projectUsersCmd)
+}
