@@ -223,3 +223,20 @@ func (client *ApiClient) GetProjectUsers(projectID int) ([]UserWithRight, error)
 
 	return usersWithRights, nil
 }
+// GetProject retrieves a single project by its ID.
+func (client *ApiClient) GetProject(projectID int) (Project, error) {
+	apiEndpoint := fmt.Sprintf("/projects/%d", projectID)
+
+	response, err := client.Get(apiEndpoint)
+	if err != nil {
+		return Project{}, err
+	}
+
+	var project Project
+	err = json.Unmarshal([]byte(response), &project)
+	if err != nil {
+		return Project{}, err
+	}
+
+	return project, nil
+}

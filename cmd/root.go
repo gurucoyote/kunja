@@ -103,6 +103,13 @@ var projectUsersCmd = &cobra.Command{
 			return
 		}
 
+		project, err := ApiClient.GetProject(projectID)
+		if err != nil {
+			fmt.Printf("Error retrieving project: %s\n", err)
+			return
+		}
+		fmt.Printf("Owner: ID: %d, Username: %s\n", project.Owner.ID, project.Owner.Username)
+
 		users, err := ApiClient.GetProjectUsers(projectID)
 		if err != nil {
 			fmt.Printf("Error retrieving project users: %s\n", err)
@@ -110,7 +117,7 @@ var projectUsersCmd = &cobra.Command{
 		}
 
 		for _, user := range users {
-			fmt.Printf("ID: %d, Username: %s, Right: %d\n", user.ID, user.Username, user.Right)
+			fmt.Printf("User: ID: %d, Username: %s, Right: %d\n", user.ID, user.Username, user.Right)
 		}
 	},
 }
