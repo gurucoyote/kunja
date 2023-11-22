@@ -79,6 +79,12 @@ type Project struct {
 }
 
 // User represents a user in the Vikunja API.
+type UserWithRight struct {
+	ID    int    `json:"id"`
+	Username  string `json:"username"`
+	Right int    `json:"right"`
+}
+
 type User struct {
 	ID               int    `json:"id"`
 	Username         string `json:"username"`
