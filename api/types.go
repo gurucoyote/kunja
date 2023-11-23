@@ -32,18 +32,19 @@ type Task struct {
 	Reminders      []TaskReminder `json:"reminders"`
 	RepeatMode     int            `json:"repeat_mode"`
 	RepeatAfter    int            `json:"repeat_after"`
-	StartDate      string         `json:"start_date"`
-	EndDate        string         `json:"end_date"`
+	StartDate      time.Time         `json:"start_date"`
+	EndDate        time.Time         `json:"end_date"`
 	PercentDone    float64        `json:"percent_done"`
 	Done           bool           `json:"done"`
 	DoneAt         time.Time      `json:"done_at"`
 	Labels         []Label        `json:"labels"`
+	// TODO set so that omitted if empty (=0)
 	ProjectID      int            `json:"project_id"`
 	Position       float64        `json:"position"`
 	BucketID       int            `json:"bucket_id"`
 	KanbanPosition float64        `json:"kanban_position"`
-	Created        string         `json:"created"`
-	Updated        string         `json:"updated"`
+	Created        time.Time         `json:"created"`
+	Updated        time.Time         `json:"updated"`
 	Urgency        float64        `json:"urgency"` // Added Urgency field
 }
 type GetAllTasksParams struct {
