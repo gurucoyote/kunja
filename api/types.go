@@ -38,8 +38,7 @@ type Task struct {
 	Done           bool           `json:"done"`
 	DoneAt         time.Time      `json:"done_at"`
 	Labels         []Label        `json:"labels"`
-	// TODO set so that omitted if empty (=0)
-	ProjectID      int            `json:"project_id"`
+	ProjectID      int            `json:"project_id,omitempty"`
 	Position       float64        `json:"position"`
 	BucketID       int            `json:"bucket_id"`
 	KanbanPosition float64        `json:"kanban_position"`
