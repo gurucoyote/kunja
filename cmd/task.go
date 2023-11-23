@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/AlecAivazis/survey/v2" // Import the survey library
 	"github.com/spf13/cobra"
 )
 
@@ -163,7 +164,65 @@ func init() {
 	rootCmd.AddCommand(newCmd)
 
 	rootCmd.AddCommand(doneCmd)
-	// rootCmd.AddCommand(editCmd) // This line should be removed or uncommented if editCmd is defined elsewhere
+	rootCmd.AddCommand(editCmd) // Add the edit command to the root command
 	rootCmd.AddCommand(assignedCmd)
 	rootCmd.AddCommand(usersCmd)
+}
+
+// editCmd represents the edit command
+var editCmd = &cobra.Command{
+	Use:   "edit",
+	Short: "Edit a task",
+	Long:  `Edit a task's title, description, or due date.`,
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		taskID, _ := strconv.Atoi(args[0])
+		task, err := ApiClient.GetTask(taskID)
+		if err != nil {
+			fmt.Println("Error getting task:", err)
+			return
+		}
+
+		// Define the options for editing
+		editOptions := []string{"Title", "Description", "Due Date", "Save"}
+		var fieldToEdit string
+
+		// Repeat the selection until the user chooses 'Save'
+		for fieldToEdit != "Save" {
+			prompt := &survey.Select{
+				Message: "Choose a field to edit:",
+				Options: editOptions,
+			}
+			survey.AskOne(prompt, &fieldToEdit)
+
+			switch fieldToEdit {
+			case "Title":
+				prompt := &survey.Input{Message: "Enter new title:"}
+				survey.AskOne(prompt, &task.Title)
+			case "Description":
+				prompt := &survey.Input{Message: "Enter new description:"}
+				survey.AskOne(prompt, &task.Description)
+			case "Due Date":
+				prompt := &survey.Input{Message: "Enter new due date (YYYY-MM-DD):"}
+				var newDueDate string
+				survey.AskOne(prompt, &newDueDate)
+				if newDueDate != "" {
+					parsedDate, err := time.Parse("2006-01-02", newDueDate)
+					if err != nil {
+						fmt.Println("Error parsing due date:", err)
+						continue
+					}
+					task.DueDate = parsedDate
+				}
+			}
+		}
+
+		// Save the updated task to the API
+		_, err = ApiClient.UpdateTask(taskID, task)
+		if err != nil {
+			fmt.Println("Error updating task:", err)
+			return
+		}
+		fmt.Println("Task updated successfully")
+	},
 }
