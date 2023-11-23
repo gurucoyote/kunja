@@ -27,14 +27,16 @@ var newCmd = &cobra.Command{
 				fmt.Println("Error parsing due date:", err)
 				return
 			}
-		}
-
-		task := api.Task{
-			Title:   title,
-			DueDate: dueDate,
+			// fmt.Println("due: ", dueDate)
 		}
 
 		projectId := 1
+		task := api.Task{
+			Title:     title,
+			DueDate:   dueDate,
+			ProjectID: projectId,
+		}
+
 		if Verbose {
 			ApiClient.Verbose = true
 		}
@@ -142,6 +144,9 @@ var usersCmd = &cobra.Command{
 	Short: "List all users",
 	Long:  `List all the users from the API.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		if Verbose {
+			ApiClient.Verbose = true
+		}
 		users, err := ApiClient.GetAllUsers()
 		if err != nil {
 			fmt.Println("Error retrieving users:", err)
