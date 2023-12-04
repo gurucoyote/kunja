@@ -197,11 +197,19 @@ var editCmd = &cobra.Command{
 
 			switch fieldToEdit {
 			case "Title":
-				prompt := &survey.Input{Message: "Enter new title:"}
-				survey.AskOne(prompt, &task.Title)
+				editedTitle, err := EditStringInEditor(task.Title)
+				if err != nil {
+					fmt.Println("Error editing title:", err)
+					continue
+				}
+				task.Title = editedTitle
 			case "Description":
-				prompt := &survey.Input{Message: "Enter new description:"}
-				survey.AskOne(prompt, &task.Description)
+				editedDescription, err := EditStringInEditor(task.Description)
+				if err != nil {
+					fmt.Println("Error editing description:", err)
+					continue
+				}
+				task.Description = editedDescription
 			case "Due Date":
 				prompt := &survey.Input{Message: "Enter new due date (YYYY-MM-DD):"}
 				var newDueDate string
