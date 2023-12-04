@@ -3,9 +3,12 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"kunja/api"
+	"io/ioutil" // Added for ioutil
+	"os"        // Added for os
+	"os/exec"   // Added for exec
 	"sort"
 	"strconv" // Added import for strconv
+	"strings" // Added for strings
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
