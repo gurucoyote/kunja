@@ -3,9 +3,9 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"kunja/api"
 	"sort"
 	"strconv" // Added import for strconv
-	"kunja/api"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -95,6 +95,7 @@ func init() {
 	viper.BindPFlag("all", rootCmd.PersistentFlags().Lookup("all"))
 
 }
+
 // projectUsersCmd represents the project-users command
 var projectUsersCmd = &cobra.Command{
 	Use:   "project-users [PROJECT_ID]",
@@ -128,4 +129,45 @@ var projectUsersCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(projectUsersCmd)
+}
+func EditStringInEditor(initialContent string) (string, error) {
+	// Create a temporary file
+	file, err := ioutil.TempFile("", "example")
+	if err != nil {
+		return "", err
+	}
+	defer os.Remove(file.Name())
+
+	// Write the initial content to the file
+	_, err = file.WriteString(initialContent)
+	if err != nil {
+		return "", err
+	}
+
+	// Open the file in the default text editor
+	cmd := exec.Command("sh", "-c", fmt.Sprintf("$EDITOR %s", file.Name()))
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	err = cmd.Run()
+	if err != nil {
+		return "", err
+	}
+
+	// Read the contents of the file
+	content, err := ioutil.ReadFile(file.Name())
+	if err != nil {
+		return "", err
+	}
+
+	// Remove comments from the content
+	lines := strings.Split(string(content), "\n")
+	var filteredLines []string
+	for _, line := range lines {
+		if !strings.HasPrefix(strings.TrimSpace(line), "#") {
+			filteredLines = append(filteredLines, line)
+		}
+	}
+	filteredContent := strings.Join(filteredLines, "\n")
+
+	return filteredContent, nil
 }
