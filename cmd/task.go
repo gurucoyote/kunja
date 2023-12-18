@@ -63,13 +63,17 @@ var doneCmd = &cobra.Command{
 			fmt.Println("Error getting task:", err)
 			return
 		}
-		task.Done = true
-		_, err = ApiClient.UpdateTask(taskID, task)
+		task.Done = !task.Done // Toggle the done status
+		updatedTask, err := ApiClient.UpdateTask(taskID, task)
 		if err != nil {
 			fmt.Println("Error updating task:", err)
 			return
 		}
-		fmt.Println("Task marked as done successfully")
+		if updatedTask.Done {
+			fmt.Println("Task marked as done successfully")
+		} else {
+			fmt.Println("Task marked as not done successfully")
+		}
 	},
 }
 
