@@ -67,6 +67,16 @@ func (a *Adapter) GetProjectUsers(ctx context.Context, projectID int) ([]api.Use
 	return a.client.GetProjectUsers(ctx, projectID)
 }
 
+/* project create / delete */
+
+func (a *Adapter) CreateProject(ctx context.Context, p api.Project) (api.Project, error) {
+	return a.client.CreateProject(ctx, p)
+}
+
+func (a *Adapter) DeleteProject(ctx context.Context, id int) (string, error) {
+	return a.client.DeleteProject(ctx, id)
+}
+
 /* ---- UserService ---- */
 
 func (a *Adapter) GetAllUsers(ctx context.Context) ([]api.User, error) {

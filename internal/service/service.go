@@ -27,6 +27,9 @@ type ProjectService interface {
 	GetAllProjects(ctx context.Context) ([]api.Project, error)
 	GetProject(ctx context.Context, id int) (api.Project, error)
 	GetProjectUsers(ctx context.Context, projectID int) ([]api.UserWithRight, error)
+
+	CreateProject(ctx context.Context, p api.Project) (api.Project, error)
+	DeleteProject(ctx context.Context, id int) (string, error)
 }
 
 // UserService defines user related operations.

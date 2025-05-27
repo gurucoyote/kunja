@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -214,6 +215,23 @@ func (client *ApiClient) GetProjectUsers(ctx context.Context, projectID int) ([]
 }
 
 // GetProject retrieves a single project by its ID.
+func (client *ApiClient) CreateProject(ctx context.Context, p Project) (Project, error) {
+	payload, _ := json.Marshal(p)
+	resp, err := client.putCtx(ctx, "/projects", string(payload))
+	if err != nil {
+		return Project{}, err
+	}
+	var created Project
+	if err := json.Unmarshal([]byte(resp), &created); err != nil {
+		return Project{}, err
+	}
+	return created, nil
+}
+
+func (client *ApiClient) DeleteProject(ctx context.Context, id int) (string, error) {
+	return client.deleteCtx(ctx, "/projects/"+strconv.Itoa(id))
+}
+
 func (client *ApiClient) GetProject(ctx context.Context, projectID int) (Project, error) {
 	apiEndpoint := fmt.Sprintf("/projects/%d", projectID)
 
