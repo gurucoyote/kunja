@@ -41,11 +41,18 @@ var rootCmd = &cobra.Command{
 		client := api.NewApiClient(viper.GetString("baseUrl"), "")
 		// wire service adapter
 		adapter := vikunja.New(client)
-		token, err := Svc.Auth.Login(viper.GetString("username"), viper.GetString("password"), "")
+
+		// authenticate via the adapter before exposing it through Svc
+		token, err := adapter.Login(
+			viper.GetString("username"),
+			viper.GetString("password"),
+			"",
+		)
 		if err != nil {
 			fmt.Println("Error logging in:", err)
 			return
 		}
+
 		Svc = Services{
 			Auth:    adapter,
 			Task:    adapter,
