@@ -11,9 +11,9 @@ import (
 var projectNewCmd = &cobra.Command{
 	Use:   "project-new [NAME]",
 	Short: "Create a new project",
-	Args:  cobra.ExactArgs(1),
+	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		name := args[0]
+		name := strings.Join(args, " ")
 		svc := getServices(cmd)
 		p, err := svc.Project.CreateProject(cmd.Context(), api.Project{Title: name})
 		if err != nil {
