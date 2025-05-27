@@ -34,7 +34,7 @@ turn-around:
     • Move api/types.go structs (Task, Project, …) and logic  
     • Keep zero dependencies except stdlib
 
-1.2 [H][L] Introduce `internal/service` interfaces  — PARTIAL DONE (interfaces created)  
+1.2 [H][L] Introduce `internal/service` interfaces  — DONE  
     • TaskService, ProjectService, AuthService …
 
 1.3 [H][M] Move Vikunja REST client to `adapter/vikunja`  
