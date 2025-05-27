@@ -20,7 +20,7 @@ func New(client *api.ApiClient) *Adapter {
 /* ---- AuthService ---- */
 
 func (a *Adapter) Login(ctx context.Context, username, password, totpPasscode string) (string, error) {
-	return a.client.Login(username, password, totpPasscode)
+	return a.client.Login(ctx, username, password, totpPasscode)
 }
 
 /* ---- TaskService ---- */

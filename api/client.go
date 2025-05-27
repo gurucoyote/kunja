@@ -2,9 +2,11 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 )
@@ -22,6 +24,43 @@ func NewApiClient(baseURL string, token string) *ApiClient {
 		Token:      token,
 		ApiBaseUrl: baseURL,
 	}
+}
+
+func (client *ApiClient) request(ctx context.Context, method, apiPath string, body io.Reader) ([]byte, int, error) {
+	if client.Verbose {
+		fmt.Printf("%s %s\n", method, client.ApiBaseUrl+apiPath)
+	}
+	req, err := http.NewRequestWithContext(ctx, method, client.ApiBaseUrl+apiPath, body)
+	if err != nil {
+		return nil, 0, err
+	}
+	req.Header.Set("Authorization", "Bearer "+client.Token)
+	if method == http.MethodPost || method == http.MethodPut {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	resp, err := client.HttpClient.Do(req)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer resp.Body.Close()
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, resp.StatusCode, err
+	}
+	return respBody, resp.StatusCode, nil
+}
+
+func (client *ApiClient) postCtx(ctx context.Context, apiPath string, payload string) (string, error) {
+	respBody, status, err := client.request(ctx, http.MethodPost, apiPath, bytes.NewBuffer([]byte(payload)))
+	if err != nil {
+		return "", err
+	}
+	if status < 200 || status >= 300 {
+		var result map[string]string
+		json.Unmarshal(respBody, &result)
+		return "", fmt.Errorf("status code: %d, message: %s", status, result["message"])
+	}
+	return string(respBody), nil
 }
 
 func (client *ApiClient) Get(apiPath string) (string, error) {
@@ -136,7 +175,7 @@ func (client *ApiClient) Delete(apiPath string) (string, error) {
 	return string(body), nil
 }
 
-func (client *ApiClient) Login(username string, password string, totp_passcode string) (string, error) {
+func (client *ApiClient) Login(ctx context.Context, username string, password string, totp_passcode string) (string, error) {
 	payload := map[string]string{
 		"username":      username,
 		"password":      password,
@@ -146,7 +185,7 @@ func (client *ApiClient) Login(username string, password string, totp_passcode s
 	if err != nil {
 		return "", err
 	}
-	response, err := client.Post("/login", string(payloadBytes))
+	response, err := client.postCtx(ctx, "/login", string(payloadBytes))
 	if err != nil {
 		return "", err
 	}
