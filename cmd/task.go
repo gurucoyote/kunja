@@ -202,7 +202,7 @@ var editCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		taskID, _ := strconv.Atoi(args[0])
-		task, err := Svc.Task.GetTask(taskID)
+		task, err := Svc.Task.GetTask(cmd.Context(), taskID)
 		if err != nil {
 			fmt.Println("Error getting task:", err)
 			return
