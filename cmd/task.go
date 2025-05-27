@@ -19,6 +19,7 @@ var newCmd = &cobra.Command{
 	Long:  `Create a new task using the provided title and due date.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		title := strings.Join(args, " ")
+		svc := getServices(cmd)
 		due, _ := cmd.Flags().GetString("due")
 
 		var dueDate time.Time
@@ -34,7 +35,7 @@ var newCmd = &cobra.Command{
 
 		projectId := viper.GetInt("project")
 		if projectId == 0 {
-			projects, err := Svc.Project.GetAllProjects(cmd.Context())
+			projects, err := svc.Project.GetAllProjects(cmd.Context())
 			if err != nil {
 				fmt.Println("Error retrieving projects:", err)
 				return
@@ -63,7 +64,7 @@ var newCmd = &cobra.Command{
 		}
 
 		// verbose mode can be handled inside the service adapter later
-		createdTask, err := Svc.Task.CreateTask(cmd.Context(), projectId, task)
+		createdTask, err := svc.Task.CreateTask(cmd.Context(), projectId, task)
 		if err != nil {
 			fmt.Println("Error creating task:", err)
 			return
@@ -80,13 +81,14 @@ var doneCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		taskID, _ := strconv.Atoi(args[0])
-		task, err := Svc.Task.GetTask(cmd.Context(), taskID)
+		svc := getServices(cmd)
+		task, err := svc.Task.GetTask(cmd.Context(), taskID)
 		if err != nil {
 			fmt.Println("Error getting task:", err)
 			return
 		}
 		task.Done = !task.Done // Toggle the done status
-		updatedTask, err := Svc.Task.UpdateTask(cmd.Context(), taskID, task)
+		updatedTask, err := svc.Task.UpdateTask(cmd.Context(), taskID, task)
 		if err != nil {
 			fmt.Println("Error updating task:", err)
 			return
@@ -106,7 +108,8 @@ var showCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		taskID, _ := strconv.Atoi(args[0])
-		task, err := Svc.Task.GetTask(cmd.Context(), taskID)
+		svc := getServices(cmd)
+		task, err := svc.Task.GetTask(cmd.Context(), taskID)
 		if err != nil {
 			fmt.Println("Error getting task:", err)
 			return
@@ -125,7 +128,8 @@ var projectsCmd = &cobra.Command{
 	Short: "List all projects",
 	Long:  `List all the projects from the API.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		projects, err := Svc.Project.GetAllProjects(cmd.Context())
+		svc := getServices(cmd)
+		projects, err := svc.Project.GetAllProjects(cmd.Context())
 		if err != nil {
 			fmt.Println("Error retrieving projects:", err)
 			return
@@ -155,7 +159,8 @@ var assignedCmd = &cobra.Command{
 			fmt.Println("Error converting task ID:", err)
 			return
 		}
-		assignees, err := Svc.Task.GetTaskAssignees(cmd.Context(), taskID)
+		svc := getServices(cmd)
+		assignees, err := svc.Task.GetTaskAssignees(cmd.Context(), taskID)
 		if err != nil {
 			fmt.Println("Error getting assignees for task:", err)
 			return
@@ -171,7 +176,8 @@ var usersCmd = &cobra.Command{
 	Short: "List all users",
 	Long:  `List all the users from the API.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		users, err := Svc.User.GetAllUsers(cmd.Context())
+		svc := getServices(cmd)
+		users, err := svc.User.GetAllUsers(cmd.Context())
 		if err != nil {
 			fmt.Println("Error retrieving users:", err)
 			return
@@ -202,7 +208,8 @@ var editCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		taskID, _ := strconv.Atoi(args[0])
-		task, err := Svc.Task.GetTask(cmd.Context(), taskID)
+		svc := getServices(cmd)
+		task, err := svc.Task.GetTask(cmd.Context(), taskID)
 		if err != nil {
 			fmt.Println("Error getting task:", err)
 			return
@@ -251,7 +258,7 @@ var editCmd = &cobra.Command{
 		}
 
 		// Save the updated task to the API
-		_, err = Svc.Task.UpdateTask(cmd.Context(), taskID, task)
+		_, err = svc.Task.UpdateTask(cmd.Context(), taskID, task)
 		if err != nil {
 			fmt.Println("Error updating task:", err)
 			return

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"kunja/api" // Added for api package
@@ -23,13 +24,21 @@ type Services struct {
 	User    service.UserService
 }
 
+type ctxKey int
+
+const servicesKey ctxKey = iota
+
+func getServices(cmd *cobra.Command) Services {
+	svc, _ := cmd.Context().Value(servicesKey).(Services)
+	return svc
+}
+
 var (
 	Verbose  bool
 	Username string
 	Password string
 	BaseUrl  string
 	ShowAll  bool
-	Svc      Services
 )
 
 var rootCmd = &cobra.Command{
@@ -54,7 +63,8 @@ var rootCmd = &cobra.Command{
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		allTasks, err := Svc.Task.GetAllTasks(cmd.Context(), api.GetAllTasksParams{})
+		svc := getServices(cmd)
+		allTasks, err := svc.Task.GetAllTasks(cmd.Context(), api.GetAllTasksParams{})
 		if err != nil {
 			fmt.Println("Error getting tasks:", err)
 			return
@@ -126,14 +136,15 @@ var projectUsersCmd = &cobra.Command{
 			return
 		}
 
-		project, err := Svc.Project.GetProject(cmd.Context(), projectID)
+		svc := getServices(cmd)
+		project, err := svc.Project.GetProject(cmd.Context(), projectID)
 		if err != nil {
 			fmt.Printf("Error retrieving project: %s\n", err)
 			return
 		}
 		fmt.Printf("Owner: ID: %d, Username: %s\n", project.Owner.ID, project.Owner.Username)
 
-		users, err := Svc.Project.GetProjectUsers(cmd.Context(), projectID)
+		users, err := svc.Project.GetProjectUsers(cmd.Context(), projectID)
 		if err != nil {
 			fmt.Printf("Error retrieving project users: %s\n", err)
 			return
