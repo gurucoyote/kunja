@@ -1,0 +1,103 @@
+Kunja – Refactor Task List
+==========================
+
+Purpose
+-------
+Prepare the existing CLI codebase for extension into a long-running MCP (Model
+Context Protocol) server while improving maintainability, testability and
+security.
+
+Legend
+------
+[PRIO]  H = high, M = medium, L = low  
+[EST]   S = <½ day, M = 1-2 days, L = 3 days+
+
+--------------------------------------------------------------------
+1. Project Structure & Layering
+--------------------------------------------------------------------
+1.1 [H][M] Create `internal/core` package with pure domain models  
+    • Move api/types.go structs (Task, Project, …) and logic  
+    • Keep zero dependencies except stdlib
+
+1.2 [H][L] Introduce `internal/service` interfaces  
+    • TaskService, ProjectService, AuthService …
+
+1.3 [H][M] Move Vikunja REST client to `adapter/vikunja`  
+    • Implement service interfaces using existing ApiClient
+
+1.4 [M][M] Restructure CLI into `cmd/cli`  
+    • Only depend on service interfaces – no direct REST calls
+
+1.5 [M][L] Add `server/mcp` package  
+    • MCP listener, handler <-> service interfaces
+--------------------------------------------------------------------
+2. ApiClient Improvements
+--------------------------------------------------------------------
+2.1 [H][M] Add `ctx context.Context` to all ApiClient methods
+
+2.2 [H][S] Replace duplicate verbs with generic `request(ctx, method, path, body)`
+
+2.3 [H][S] Share a single `http.Client` with  
+    • Timeout (15 s)  
+    • Transport keep-alive tuning
+
+2.4 [M][S] Switch from deprecated `io/ioutil` → `io` + `os`
+
+2.5 [M][S] Error handling  
+    • Attempt JSON decode; on fail include first 256 B of body
+--------------------------------------------------------------------
+3. Authentication & Security
+--------------------------------------------------------------------
+3.1 [H][M] Implement token cache & refresh flow
+
+3.2 [H][M] Remove plaintext password from `config.yaml`  
+    • Support env vars + OS keyring (github.com/zalando/go-keyring)
+
+3.3 [M][S] Harden `EditStringInEditor`  
+    • Use `exec.Command(editor, file)` (no shell)  
+    • Default to `vi` if $EDITOR empty
+--------------------------------------------------------------------
+4. CLI Enhancements
+--------------------------------------------------------------------
+4.1 [H][S] Inject dependencies instead of globals (Verbose, ApiClient)
+
+4.2 [M][S] Make `login` explicit command; remove network I/O from `PersistentPreRun`
+
+4.3 [M][S] Add `--project, -P` flag to `new` (default from config)
+
+4.4 [M][S] Return non-zero exit code on command errors
+
+4.5 [L][M] Provide flag alternatives for interactive survey prompts
+--------------------------------------------------------------------
+5. Logging & Config
+--------------------------------------------------------------------
+5.1 [M][S] Introduce structured logger (`log/slog`)
+
+5.2 [M][S] Config precedence: flags > env > file > default
+
+5.3 [L][S] Add `kunja config print` command
+--------------------------------------------------------------------
+6. Tests & CI
+--------------------------------------------------------------------
+6.1 [H][M] Create mocks for service interfaces
+
+6.2 [H][M] Unit tests for each cobra command (spf13/cobra-test)
+
+6.3 [M][S] Add GitHub Actions: `go test ./...`, `go vet`, `golangci-lint`
+--------------------------------------------------------------------
+7. MCP Server
+--------------------------------------------------------------------
+7.1 [H][L] Define MCP <-> core mapping document
+
+7.2 [H][L] Implement listener with graceful shutdown (context, signals)
+
+7.3 [M][M] Add concurrency limits, rate limiting, metrics
+--------------------------------------------------------------------
+8. Miscellaneous
+--------------------------------------------------------------------
+8.1 [M][S] Remove duplicated `init()` blocks in cmd files
+
+8.2 [M][S] Run `go mod tidy` and commit
+
+8.3 [L][S] Replace unmaintained `github.com/chzyer/readline`  
+    • Evaluate `github.com/charmbracelet/bubbletea` + `lipgloss`
