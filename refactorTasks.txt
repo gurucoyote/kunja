@@ -48,7 +48,7 @@ turn-around:
 --------------------------------------------------------------------
 2. ApiClient Improvements
 --------------------------------------------------------------------
-2.1 [H][M] Add `ctx context.Context` to all ApiClient methods — DONE
+2.1 [H][M] Add `context.Context` to all ApiClient methods — DONE
 
 2.2 [H][S] Replace duplicate verbs with generic `request(ctx, method, path, body)` — DONE
 
