@@ -56,21 +56,21 @@ func (a *Adapter) GetTaskAssignees(ctx context.Context, taskID int) ([]api.User,
 /* ---- ProjectService ---- */
 
 func (a *Adapter) GetAllProjects(ctx context.Context) ([]api.Project, error) {
-	return a.client.GetAllProjects()
+	return a.client.GetAllProjects(ctx)
 }
 
 func (a *Adapter) GetProject(ctx context.Context, id int) (api.Project, error) {
-	return a.client.GetProject(id)
+	return a.client.GetProject(ctx, id)
 }
 
 func (a *Adapter) GetProjectUsers(ctx context.Context, projectID int) ([]api.UserWithRight, error) {
-	return a.client.GetProjectUsers(projectID)
+	return a.client.GetProjectUsers(ctx, projectID)
 }
 
 /* ---- UserService ---- */
 
 func (a *Adapter) GetAllUsers(ctx context.Context) ([]api.User, error) {
-	return a.client.GetAllUsers()
+	return a.client.GetAllUsers(ctx)
 }
 
 // Ensure compile-time interface satisfaction

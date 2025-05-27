@@ -50,6 +50,19 @@ func (client *ApiClient) request(ctx context.Context, method, apiPath string, bo
 	return respBody, resp.StatusCode, nil
 }
 
+func (client *ApiClient) getCtx(ctx context.Context, apiPath string) (string, error) {
+	respBody, status, err := client.request(ctx, http.MethodGet, apiPath, nil)
+	if err != nil {
+		return "", err
+	}
+	if status < 200 || status >= 300 {
+		var result map[string]string
+		json.Unmarshal(respBody, &result)
+		return "", fmt.Errorf("status code: %d, message: %s", status, result["message"])
+	}
+	return string(respBody), nil
+}
+
 func (client *ApiClient) postCtx(ctx context.Context, apiPath string, payload string) (string, error) {
 	respBody, status, err := client.request(ctx, http.MethodPost, apiPath, bytes.NewBuffer([]byte(payload)))
 	if err != nil {
@@ -206,8 +219,8 @@ func (client *ApiClient) Login(ctx context.Context, username string, password st
 }
 
 // GetAllUsers retrieves all existing users.
-func (client *ApiClient) GetAllUsers() ([]User, error) {
-	response, err := client.Get("/users?include=details")
+func (client *ApiClient) GetAllUsers(ctx context.Context) ([]User, error) {
+	response, err := client.getCtx(ctx, "/users?include=details")
 	if err != nil {
 		return nil, err
 	}
@@ -226,8 +239,8 @@ func (client *ApiClient) GetAllUsers() ([]User, error) {
 	return users, nil
 }
 
-func (client *ApiClient) GetAllProjects() ([]Project, error) {
-	response, err := client.Get("/projects")
+func (client *ApiClient) GetAllProjects(ctx context.Context) ([]Project, error) {
+	response, err := client.getCtx(ctx, "/projects")
 	if err != nil {
 		return nil, err
 	}
@@ -247,10 +260,10 @@ func (client *ApiClient) GetAllProjects() ([]Project, error) {
 }
 
 // GetProjectUsers retrieves all users that a given project is shared with.
-func (client *ApiClient) GetProjectUsers(projectID int) ([]UserWithRight, error) {
+func (client *ApiClient) GetProjectUsers(ctx context.Context, projectID int) ([]UserWithRight, error) {
 	apiEndpoint := fmt.Sprintf("/projects/%d/users", projectID)
 
-	response, err := client.Get(apiEndpoint)
+	response, err := client.getCtx(ctx, apiEndpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -265,10 +278,10 @@ func (client *ApiClient) GetProjectUsers(projectID int) ([]UserWithRight, error)
 }
 
 // GetProject retrieves a single project by its ID.
-func (client *ApiClient) GetProject(projectID int) (Project, error) {
+func (client *ApiClient) GetProject(ctx context.Context, projectID int) (Project, error) {
 	apiEndpoint := fmt.Sprintf("/projects/%d", projectID)
 
-	response, err := client.Get(apiEndpoint)
+	response, err := client.getCtx(ctx, apiEndpoint)
 	if err != nil {
 		return Project{}, err
 	}
