@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/google/go-querystring/query"
@@ -8,9 +9,9 @@ import (
 	"time"
 )
 
-func (client *ApiClient) GetAllTasks(params GetAllTasksParams) ([]Task, error) {
+func (client *ApiClient) GetAllTasks(ctx context.Context, params GetAllTasksParams) ([]Task, error) {
 	queryParams, _ := query.Values(params)
-	response, err := client.Get("/tasks/all?" + queryParams.Encode())
+	response, err := client.getCtx(ctx, "/tasks/all?"+queryParams.Encode())
 	if err != nil {
 		return nil, err
 	}
@@ -67,12 +68,12 @@ func (task *Task) getDueDateScore() int {
 // UpdateTask updates a task. This includes marking it as done.
 // Assignees you pass will be updated, see their individual endpoints for more details on how this is done.
 // To update labels, see the description of the endpoint.
-func (client *ApiClient) UpdateTask(ID int, task Task) (Task, error) {
+func (client *ApiClient) UpdateTask(ctx context.Context, ID int, task Task) (Task, error) {
 	taskJson, err := json.Marshal(task)
 	if err != nil {
 		return Task{}, err
 	}
-	response, err := client.Post("/tasks/"+strconv.Itoa(ID), string(taskJson))
+	response, err := client.postCtx(ctx, "/tasks/"+strconv.Itoa(ID), string(taskJson))
 	if err != nil {
 		return Task{}, err
 	}
@@ -85,8 +86,8 @@ func (client *ApiClient) UpdateTask(ID int, task Task) (Task, error) {
 }
 
 // DeleteTask deletes a task from a project. This does not mean "mark it done".
-func (client *ApiClient) DeleteTask(ID int) (string, error) {
-	response, err := client.Delete("/tasks/" + strconv.Itoa(ID))
+func (client *ApiClient) DeleteTask(ctx context.Context, ID int) (string, error) {
+	response, err := client.deleteCtx(ctx, "/tasks/"+strconv.Itoa(ID))
 	if err != nil {
 		return "", err
 	}
@@ -94,8 +95,8 @@ func (client *ApiClient) DeleteTask(ID int) (string, error) {
 }
 
 // GetTask returns one task by its ID
-func (client *ApiClient) GetTask(ID int) (Task, error) {
-	response, err := client.Get("/tasks/" + strconv.Itoa(ID) + "?include=project,label_objects,assignees")
+func (client *ApiClient) GetTask(ctx context.Context, ID int) (Task, error) {
+	response, err := client.getCtx(ctx, "/tasks/"+strconv.Itoa(ID)+"?include=project,label_objects,assignees")
 	if err != nil {
 		return Task{}, err
 	}
@@ -176,12 +177,12 @@ TODO: implement this api method to create a task
 	    }
 	},
 */
-func (client *ApiClient) CreateTask(projectID int, task Task) (Task, error) {
+func (client *ApiClient) CreateTask(ctx context.Context, projectID int, task Task) (Task, error) {
 	taskJson, err := json.Marshal(task)
 	if err != nil {
 		return Task{}, err
 	}
-	response, err := client.Put("/projects/"+strconv.Itoa(projectID), string(taskJson)) // +"/tasks"
+	response, err := client.putCtx(ctx, "/projects/"+strconv.Itoa(projectID), string(taskJson)) // +"/tasks"
 	if err != nil {
 		return Task{}, err
 	}
@@ -194,7 +195,7 @@ func (client *ApiClient) CreateTask(projectID int, task Task) (Task, error) {
 }
 
 // AssignUserToTask assigns a user to a task by making a PUT request to the /tasks/{taskID}/assignees endpoint.
-func (client *ApiClient) AssignUserToTask(taskID int, userID int) (string, error) {
+func (client *ApiClient) AssignUserToTask(ctx context.Context, taskID int, userID int) (string, error) {
 	// Construct the API endpoint with the taskID
 	apiEndpoint := fmt.Sprintf("/tasks/%d/assignees", taskID)
 
@@ -206,7 +207,7 @@ func (client *ApiClient) AssignUserToTask(taskID int, userID int) (string, error
 	}
 
 	// Make the PUT request
-	response, err := client.Put(apiEndpoint, string(payloadBytes))
+	response, err := client.putCtx(ctx, apiEndpoint, string(payloadBytes))
 	if err != nil {
 		return "", err
 	}
@@ -215,10 +216,10 @@ func (client *ApiClient) AssignUserToTask(taskID int, userID int) (string, error
 }
 
 // GetTaskAssignees retrieves all assignees for a given task.
-func (client *ApiClient) GetTaskAssignees(taskID int) ([]User, error) {
+func (client *ApiClient) GetTaskAssignees(ctx context.Context, taskID int) ([]User, error) {
 	apiEndpoint := fmt.Sprintf("/tasks/%d/assignees", taskID)
 
-	response, err := client.Get(apiEndpoint)
+	response, err := client.getCtx(ctx, apiEndpoint)
 	if err != nil {
 		return nil, err
 	}

@@ -63,6 +63,34 @@ func (client *ApiClient) getCtx(ctx context.Context, apiPath string) (string, er
 	return string(respBody), nil
 }
 
+// putCtx sends a PUT request with context support.
+func (client *ApiClient) putCtx(ctx context.Context, apiPath string, payload string) (string, error) {
+	respBody, status, err := client.request(ctx, http.MethodPut, apiPath, bytes.NewBuffer([]byte(payload)))
+	if err != nil {
+		return "", err
+	}
+	if status < 200 || status >= 300 {
+		var result map[string]string
+		json.Unmarshal(respBody, &result)
+		return "", fmt.Errorf("status code: %d, message: %s", status, result["message"])
+	}
+	return string(respBody), nil
+}
+
+// deleteCtx sends a DELETE request with context support.
+func (client *ApiClient) deleteCtx(ctx context.Context, apiPath string) (string, error) {
+	respBody, status, err := client.request(ctx, http.MethodDelete, apiPath, nil)
+	if err != nil {
+		return "", err
+	}
+	if status < 200 || status >= 300 {
+		var result map[string]string
+		json.Unmarshal(respBody, &result)
+		return "", fmt.Errorf("status code: %d, message: %s", status, result["message"])
+	}
+	return string(respBody), nil
+}
+
 func (client *ApiClient) postCtx(ctx context.Context, apiPath string, payload string) (string, error) {
 	respBody, status, err := client.request(ctx, http.MethodPost, apiPath, bytes.NewBuffer([]byte(payload)))
 	if err != nil {

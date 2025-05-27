@@ -26,31 +26,31 @@ func (a *Adapter) Login(ctx context.Context, username, password, totpPasscode st
 /* ---- TaskService ---- */
 
 func (a *Adapter) GetAllTasks(ctx context.Context, params api.GetAllTasksParams) ([]api.Task, error) {
-	return a.client.GetAllTasks(params)
+	return a.client.GetAllTasks(ctx, params)
 }
 
 func (a *Adapter) GetTask(ctx context.Context, id int) (api.Task, error) {
-	return a.client.GetTask(id)
+	return a.client.GetTask(ctx, id)
 }
 
 func (a *Adapter) CreateTask(ctx context.Context, projectID int, task api.Task) (api.Task, error) {
-	return a.client.CreateTask(projectID, task)
+	return a.client.CreateTask(ctx, projectID, task)
 }
 
 func (a *Adapter) UpdateTask(ctx context.Context, id int, task api.Task) (api.Task, error) {
-	return a.client.UpdateTask(id, task)
+	return a.client.UpdateTask(ctx, id, task)
 }
 
 func (a *Adapter) DeleteTask(ctx context.Context, id int) (string, error) {
-	return a.client.DeleteTask(id)
+	return a.client.DeleteTask(ctx, id)
 }
 
 func (a *Adapter) AssignUserToTask(ctx context.Context, taskID, userID int) (string, error) {
-	return a.client.AssignUserToTask(taskID, userID)
+	return a.client.AssignUserToTask(ctx, taskID, userID)
 }
 
 func (a *Adapter) GetTaskAssignees(ctx context.Context, taskID int) ([]api.User, error) {
-	return a.client.GetTaskAssignees(taskID)
+	return a.client.GetTaskAssignees(ctx, taskID)
 }
 
 /* ---- ProjectService ---- */
