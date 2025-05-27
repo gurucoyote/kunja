@@ -76,7 +76,7 @@ turn-around:
 --------------------------------------------------------------------
 4.1 [H][S] Inject dependencies instead of globals (Verbose, ApiClient)
 
-4.2 [M][S] Make `login` explicit command; remove network I/O from `PersistentPreRun`
+4.2 [M][S] Make `login` explicit command; remove network I/O from `PersistentPreRun` — DONE
 
 4.3 [M][S] Add `--project, -P` flag to `new` (default from config) — DONE
 
