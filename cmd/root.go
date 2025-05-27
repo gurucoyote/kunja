@@ -38,12 +38,14 @@ var rootCmd = &cobra.Command{
 	Short: "A CLI client for the Vikunja task management API",
 	Long:  `A CLI client for the Vikunja task management API. It allows you to interact with the Vikunja API from the command line.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		ctx := cmd.Context()
 		client := api.NewApiClient(viper.GetString("baseUrl"), "")
 		// wire service adapter
 		adapter := vikunja.New(client)
 
 		// authenticate via the adapter before exposing it through Svc
 		token, err := adapter.Login(
+			ctx,
 			viper.GetString("username"),
 			viper.GetString("password"),
 			"",
@@ -64,7 +66,7 @@ var rootCmd = &cobra.Command{
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		allTasks, err := Svc.Task.GetAllTasks(api.GetAllTasksParams{})
+		allTasks, err := Svc.Task.GetAllTasks(cmd.Context(), api.GetAllTasksParams{})
 		if err != nil {
 			fmt.Println("Error getting tasks:", err)
 			return
@@ -136,14 +138,14 @@ var projectUsersCmd = &cobra.Command{
 			return
 		}
 
-		project, err := Svc.Project.GetProject(projectID)
+		project, err := Svc.Project.GetProject(cmd.Context(), projectID)
 		if err != nil {
 			fmt.Printf("Error retrieving project: %s\n", err)
 			return
 		}
 		fmt.Printf("Owner: ID: %d, Username: %s\n", project.Owner.ID, project.Owner.Username)
 
-		users, err := Svc.Project.GetProjectUsers(projectID)
+		users, err := Svc.Project.GetProjectUsers(cmd.Context(), projectID)
 		if err != nil {
 			fmt.Printf("Error retrieving project users: %s\n", err)
 			return

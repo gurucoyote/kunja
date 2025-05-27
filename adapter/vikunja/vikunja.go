@@ -1,6 +1,8 @@
 package vikunja
 
 import (
+	"context"
+
 	"kunja/api"
 	"kunja/internal/service"
 )
@@ -17,57 +19,57 @@ func New(client *api.ApiClient) *Adapter {
 
 /* ---- AuthService ---- */
 
-func (a *Adapter) Login(username, password, totpPasscode string) (string, error) {
+func (a *Adapter) Login(ctx context.Context, username, password, totpPasscode string) (string, error) {
 	return a.client.Login(username, password, totpPasscode)
 }
 
 /* ---- TaskService ---- */
 
-func (a *Adapter) GetAllTasks(params api.GetAllTasksParams) ([]api.Task, error) {
+func (a *Adapter) GetAllTasks(ctx context.Context, params api.GetAllTasksParams) ([]api.Task, error) {
 	return a.client.GetAllTasks(params)
 }
 
-func (a *Adapter) GetTask(id int) (api.Task, error) {
+func (a *Adapter) GetTask(ctx context.Context, id int) (api.Task, error) {
 	return a.client.GetTask(id)
 }
 
-func (a *Adapter) CreateTask(projectID int, task api.Task) (api.Task, error) {
+func (a *Adapter) CreateTask(ctx context.Context, projectID int, task api.Task) (api.Task, error) {
 	return a.client.CreateTask(projectID, task)
 }
 
-func (a *Adapter) UpdateTask(id int, task api.Task) (api.Task, error) {
+func (a *Adapter) UpdateTask(ctx context.Context, id int, task api.Task) (api.Task, error) {
 	return a.client.UpdateTask(id, task)
 }
 
-func (a *Adapter) DeleteTask(id int) (string, error) {
+func (a *Adapter) DeleteTask(ctx context.Context, id int) (string, error) {
 	return a.client.DeleteTask(id)
 }
 
-func (a *Adapter) AssignUserToTask(taskID, userID int) (string, error) {
+func (a *Adapter) AssignUserToTask(ctx context.Context, taskID, userID int) (string, error) {
 	return a.client.AssignUserToTask(taskID, userID)
 }
 
-func (a *Adapter) GetTaskAssignees(taskID int) ([]api.User, error) {
+func (a *Adapter) GetTaskAssignees(ctx context.Context, taskID int) ([]api.User, error) {
 	return a.client.GetTaskAssignees(taskID)
 }
 
 /* ---- ProjectService ---- */
 
-func (a *Adapter) GetAllProjects() ([]api.Project, error) {
+func (a *Adapter) GetAllProjects(ctx context.Context) ([]api.Project, error) {
 	return a.client.GetAllProjects()
 }
 
-func (a *Adapter) GetProject(id int) (api.Project, error) {
+func (a *Adapter) GetProject(ctx context.Context, id int) (api.Project, error) {
 	return a.client.GetProject(id)
 }
 
-func (a *Adapter) GetProjectUsers(projectID int) ([]api.UserWithRight, error) {
+func (a *Adapter) GetProjectUsers(ctx context.Context, projectID int) ([]api.UserWithRight, error) {
 	return a.client.GetProjectUsers(projectID)
 }
 
 /* ---- UserService ---- */
 
-func (a *Adapter) GetAllUsers() ([]api.User, error) {
+func (a *Adapter) GetAllUsers(ctx context.Context) ([]api.User, error) {
 	return a.client.GetAllUsers()
 }
 
