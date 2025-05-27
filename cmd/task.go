@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"kunja/api"
+	"os"
 	"strconv"
 	"strings"
+	"text/tabwriter"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2" // Import the survey library
@@ -158,12 +160,18 @@ var projectsCmd = &cobra.Command{
 			fmt.Println("Error retrieving projects:", err)
 			return err
 		}
-		jsonProjects, err := json.MarshalIndent(&projects, "", "  ")
-		if err != nil {
-			fmt.Println("Error marshaling projects to JSON:", err)
-			return err
+
+		// human-friendly table output
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+		fmt.Fprintln(w, "ID\tTitle\tFav")
+		for _, p := range projects {
+			fav := ""
+			if p.IsFavorite {
+				fav = "★"
+			}
+			fmt.Fprintf(w, "%d\t%s\t%s\n", p.ID, p.Title, fav)
 		}
-		fmt.Println(string(jsonProjects))
+		w.Flush()
 		return nil
 	},
 }
