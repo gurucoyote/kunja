@@ -65,12 +65,11 @@ var rootCmd = &cobra.Command{
 		ctx := context.WithValue(cmd.Context(), servicesKey, services)
 		cmd.SetContext(ctx)
 	},
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		svc := getServices(cmd)
 		allTasks, err := svc.Task.GetAllTasks(cmd.Context(), api.GetAllTasksParams{})
 		if err != nil {
-			fmt.Println("Error getting tasks:", err)
-			return
+			return err
 		}
 		if Verbose {
 			formattedTasks, _ := json.MarshalIndent(allTasks, "", "  ")
@@ -109,6 +108,7 @@ var rootCmd = &cobra.Command{
 				fmt.Printf("Done At: %s\n", task.DoneAt.Format("2006-01-02 15:04:05"))
 			}
 		}
+		return nil
 	},
 }
 

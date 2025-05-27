@@ -47,13 +47,18 @@ func GetUserInput() string {
 // this enters the main loop of asking for user input and executing commands
 func Execute() {
 	// execute once on startup for commandline params etc.
-	rootCmd.Execute()
-	// enter continuous loop for futher further
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	// enter continuous loop for further commands
 	for {
 		input := GetUserInput()
 		args := strings.Fields(input)
 		rootCmd.SetArgs(args)
-		rootCmd.Execute()
+		if err := rootCmd.Execute(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
 	}
 }
 
