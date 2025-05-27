@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
 type ApiClient struct {
@@ -18,8 +19,16 @@ type ApiClient struct {
 }
 
 func NewApiClient(baseURL string, token string) *ApiClient {
+	transport := &http.Transport{
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 10,
+		IdleConnTimeout:     90 * time.Second,
+	}
 	return &ApiClient{
-		HttpClient: &http.Client{},
+		HttpClient: &http.Client{
+			Timeout:   15 * time.Second,
+			Transport: transport,
+		},
 		Token:      token,
 		ApiBaseUrl: baseURL,
 	}
