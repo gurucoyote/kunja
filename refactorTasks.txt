@@ -58,7 +58,7 @@ turn-around:
 
 2.4 [M][S] Switch from deprecated `io/ioutil` → `io` + `os` — DONE
 
-2.5 [M][S] Error handling  
+2.5 [M][S] Error handling — DONE  
     • Attempt JSON decode; on fail include first 256 B of body
 --------------------------------------------------------------------
 3. Authentication & Security
@@ -74,7 +74,7 @@ turn-around:
 --------------------------------------------------------------------
 4. CLI Enhancements
 --------------------------------------------------------------------
-4.1 [H][S] Inject dependencies instead of globals (Verbose, ApiClient)
+4.1 [H][S] Inject dependencies instead of globals (Verbose, ApiClient) — DONE
 
 4.2 [M][S] Make `login` explicit command; remove network I/O from `PersistentPreRun` — DONE
 
