@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/google/go-querystring/query"
 	"strconv"
-	"time"
 )
 
 func (client *ApiClient) GetAllTasks(ctx context.Context, params GetAllTasksParams) ([]Task, error) {
@@ -26,44 +25,6 @@ func (client *ApiClient) GetAllTasks(ctx context.Context, params GetAllTasksPara
 	return tasks, nil
 }
 
-func (task *Task) CalculateUrgency() {
-	if task.Done {
-		task.Urgency = 0.0
-		return
-	}
-	dueDateScore := float64(task.getDueDateScore())
-	priorityScore := float64(task.Priority)
-	favoriteScore := 0.0
-	if task.IsFavorite {
-		favoriteScore = 1.0
-	}
-	task.Urgency = 1.0 + dueDateScore + priorityScore + favoriteScore
-}
-
-func (task *Task) getDueDateScore() int {
-	if task.DueDate.IsZero() {
-		return 0
-	}
-	dueDays := int(task.DueDate.Sub(time.Now()).Hours() / 24)
-	switch {
-	case dueDays < 0:
-		return 6
-	case dueDays == 0:
-		return 5
-	case dueDays == 1:
-		return 4
-	case dueDays > 1 && dueDays <= 2:
-		return 3
-	case dueDays > 2 && dueDays <= 5:
-		return 2
-	case dueDays > 5 && dueDays <= 10:
-		return 1
-	case dueDays > 14:
-		return -1
-	default:
-		return 0
-	}
-}
 
 // UpdateTask updates a task. This includes marking it as done.
 // Assignees you pass will be updated, see their individual endpoints for more details on how this is done.
