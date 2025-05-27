@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"kunja/api" // Added for api package
 	"kunja/adapter/vikunja"
 	"kunja/internal/service"
@@ -151,7 +150,7 @@ func init() {
 }
 func EditStringInEditor(initialContent string) (string, error) {
 	// Create a temporary file
-	file, err := ioutil.TempFile("", "example")
+	file, err := os.CreateTemp("", "example")
 	if err != nil {
 		return "", err
 	}
@@ -164,7 +163,11 @@ func EditStringInEditor(initialContent string) (string, error) {
 	}
 
 	// Open the file in the default text editor
-	cmd := exec.Command("sh", "-c", fmt.Sprintf("$EDITOR %s", file.Name()))
+	editor := os.Getenv("EDITOR")
+	if editor == "" {
+		editor = "vi"
+	}
+	cmd := exec.Command(editor, file.Name())
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	err = cmd.Run()
@@ -173,7 +176,7 @@ func EditStringInEditor(initialContent string) (string, error) {
 	}
 
 	// Read the contents of the file
-	content, err := ioutil.ReadFile(file.Name())
+	content, err := os.ReadFile(file.Name())
 	if err != nil {
 		return "", err
 	}
