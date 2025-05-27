@@ -157,7 +157,7 @@ func (client *ApiClient) Login(ctx context.Context, username string, password st
 
 // GetAllUsers retrieves all existing users.
 func (client *ApiClient) GetAllUsers(ctx context.Context) ([]User, error) {
-	response, err := client.getCtx(ctx, "/users?include=details")
+	response, err := client.getCtx(ctx, "/users?include=details&s=")
 	if err != nil {
 		return nil, err
 	}
