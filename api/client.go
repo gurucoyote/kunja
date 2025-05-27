@@ -58,15 +58,29 @@ func (client *ApiClient) request(ctx context.Context, method, apiPath string, bo
 	return respBody, resp.StatusCode, nil
 }
 
+func errorFromBody(status int, respBody []byte) error {
+	// First try to decode the standard Vikunja JSON error payload
+	var result map[string]string
+	if err := json.Unmarshal(respBody, &result); err == nil {
+		if msg, ok := result["message"]; ok {
+			return fmt.Errorf("status code: %d, message: %s", status, msg)
+		}
+	}
+	// Fallback: include at most the first 256 bytes of the raw body
+	snippet := string(respBody)
+	if len(snippet) > 256 {
+		snippet = snippet[:256]
+	}
+	return fmt.Errorf("status code: %d, body: %s", status, snippet)
+}
+
 func (client *ApiClient) getCtx(ctx context.Context, apiPath string) (string, error) {
 	respBody, status, err := client.request(ctx, http.MethodGet, apiPath, nil)
 	if err != nil {
 		return "", err
 	}
 	if status < 200 || status >= 300 {
-		var result map[string]string
-		json.Unmarshal(respBody, &result)
-		return "", fmt.Errorf("status code: %d, message: %s", status, result["message"])
+		return "", errorFromBody(status, respBody)
 	}
 	return string(respBody), nil
 }
@@ -78,9 +92,7 @@ func (client *ApiClient) putCtx(ctx context.Context, apiPath string, payload str
 		return "", err
 	}
 	if status < 200 || status >= 300 {
-		var result map[string]string
-		json.Unmarshal(respBody, &result)
-		return "", fmt.Errorf("status code: %d, message: %s", status, result["message"])
+		return "", errorFromBody(status, respBody)
 	}
 	return string(respBody), nil
 }
@@ -92,9 +104,7 @@ func (client *ApiClient) deleteCtx(ctx context.Context, apiPath string) (string,
 		return "", err
 	}
 	if status < 200 || status >= 300 {
-		var result map[string]string
-		json.Unmarshal(respBody, &result)
-		return "", fmt.Errorf("status code: %d, message: %s", status, result["message"])
+		return "", errorFromBody(status, respBody)
 	}
 	return string(respBody), nil
 }
@@ -105,9 +115,7 @@ func (client *ApiClient) postCtx(ctx context.Context, apiPath string, payload st
 		return "", err
 	}
 	if status < 200 || status >= 300 {
-		var result map[string]string
-		json.Unmarshal(respBody, &result)
-		return "", fmt.Errorf("status code: %d, message: %s", status, result["message"])
+		return "", errorFromBody(status, respBody)
 	}
 	return string(respBody), nil
 }
