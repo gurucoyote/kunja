@@ -215,8 +215,18 @@ func (client *ApiClient) GetProjectUsers(ctx context.Context, projectID int) ([]
 }
 
 // GetProject retrieves a single project by its ID.
+type projectCreate struct {
+	Title           string `json:"title"`
+	Description     string `json:"description,omitempty"`
+	ParentProjectID int    `json:"parent_project_id,omitempty"`
+}
+
 func (client *ApiClient) CreateProject(ctx context.Context, p Project) (Project, error) {
-	payload, _ := json.Marshal(p)
+	payload, _ := json.Marshal(projectCreate{
+		Title:           p.Title,
+		Description:     p.Description,
+		ParentProjectID: p.ParentProjectID,
+	})
 	resp, err := client.putCtx(ctx, "/projects", string(payload))
 	if err != nil {
 		return Project{}, err
