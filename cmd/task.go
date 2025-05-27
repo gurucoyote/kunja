@@ -103,6 +103,27 @@ var doneCmd = &cobra.Command{
 	},
 }
 
+var deleteCmd = &cobra.Command{
+	Use:   "delete",
+	Short: "Delete a task",
+	Long:  `Delete a task permanently using the provided task ID.`,
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		taskID, err := strconv.Atoi(args[0])
+		if err != nil {
+			fmt.Println("Error converting task ID:", err)
+			return err
+		}
+		svc := getServices(cmd)
+		if _, err := svc.Task.DeleteTask(cmd.Context(), taskID); err != nil {
+			fmt.Println("Error deleting task:", err)
+			return err
+		}
+		fmt.Println("Task deleted successfully")
+		return nil
+	},
+}
+
 var showCmd = &cobra.Command{
 	Use:   "show",
 	Short: "Show task details",
@@ -201,6 +222,7 @@ func init() {
 	rootCmd.AddCommand(newCmd)
 
 	rootCmd.AddCommand(doneCmd)
+	rootCmd.AddCommand(deleteCmd)
 	rootCmd.AddCommand(editCmd) // Add the edit command to the root command
 	rootCmd.AddCommand(assignedCmd)
 	rootCmd.AddCommand(usersCmd)
