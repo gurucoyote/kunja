@@ -40,13 +40,19 @@ var rootCmd = &cobra.Command{
 	Long:  `A CLI client for the Vikunja task management API. It allows you to interact with the Vikunja API from the command line.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		ApiClient = api.NewApiClient(viper.GetString("baseUrl"), "")
-		token, err := ApiClient.Login(viper.GetString("username"), viper.GetString("password"), "")
+		// wire service adapter
+		adapter := vikunja.New(ApiClient)
+		Svc = Services{
+			Auth:    adapter,
+			Task:    adapter,
+			Project: adapter,
+			User:    adapter,
+		}
+		token, err := Svc.Auth.Login(viper.GetString("username"), viper.GetString("password"), "")
 		if err != nil {
 			fmt.Println("Error logging in:", err)
 			return
 		}
-		// wire service adapter
-		adapter := vikunja.New(ApiClient)
 		Svc = Services{
 			Auth:    adapter,
 			Task:    adapter,
