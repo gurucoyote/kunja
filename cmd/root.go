@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"kunja/api" // Added for api package
+	"kunja/adapter/vikunja"
+	"kunja/internal/service"
 	"os"
 	"os/exec"
 	"sort"
@@ -15,6 +17,13 @@ import (
 	"github.com/spf13/viper"
 )
 
+type Services struct {
+	Auth    service.AuthService
+	Task    service.TaskService
+	Project service.ProjectService
+	User    service.UserService
+}
+
 var (
 	Verbose   bool
 	Username  string
@@ -22,6 +31,7 @@ var (
 	BaseUrl   string
 	ApiClient *api.ApiClient
 	ShowAll   bool
+	Svc       Services
 )
 
 var rootCmd = &cobra.Command{
@@ -34,6 +44,14 @@ var rootCmd = &cobra.Command{
 		if err != nil {
 			fmt.Println("Error logging in:", err)
 			return
+		}
+		// wire service adapter
+		adapter := vikunja.New(ApiClient)
+		Svc = Services{
+			Auth:    adapter,
+			Task:    adapter,
+			Project: adapter,
+			User:    adapter,
 		}
 		if Verbose {
 			fmt.Println("Logged in with token:", token)

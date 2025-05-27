@@ -152,7 +152,7 @@ var usersCmd = &cobra.Command{
 		if Verbose {
 			ApiClient.Verbose = true
 		}
-		users, err := ApiClient.GetAllUsers()
+		users, err := Svc.User.GetAllUsers()
 		if err != nil {
 			fmt.Println("Error retrieving users:", err)
 			return
