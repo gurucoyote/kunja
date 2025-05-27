@@ -32,8 +32,8 @@ type Task struct {
 	Reminders      []TaskReminder `json:"reminders"`
 	RepeatMode     int            `json:"repeat_mode"`
 	RepeatAfter    int            `json:"repeat_after"`
-	StartDate      time.Time         `json:"start_date"`
-	EndDate        time.Time         `json:"end_date"`
+	StartDate      time.Time      `json:"start_date"`
+	EndDate        time.Time      `json:"end_date"`
 	PercentDone    float64        `json:"percent_done"`
 	Done           bool           `json:"done"`
 	DoneAt         time.Time      `json:"done_at"`
@@ -42,8 +42,8 @@ type Task struct {
 	Position       float64        `json:"position"`
 	BucketID       int            `json:"bucket_id"`
 	KanbanPosition float64        `json:"kanban_position"`
-	Created        time.Time         `json:"created"`
-	Updated        time.Time         `json:"updated"`
+	Created        time.Time      `json:"created"`
+	Updated        time.Time      `json:"updated"`
 	Urgency        float64        `json:"urgency"` // Added Urgency field
 }
 type GetAllTasksParams struct {
@@ -80,9 +80,9 @@ type Project struct {
 
 // User represents a user in the Vikunja API.
 type UserWithRight struct {
-	ID    int    `json:"id"`
-	Username  string `json:"username"`
-	Right int    `json:"right"`
+	ID       int    `json:"id"`
+	Username string `json:"username"`
+	Right    int    `json:"right"`
 }
 
 type User struct {

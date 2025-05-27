@@ -206,6 +206,7 @@ func (client *ApiClient) GetAllProjects() ([]Project, error) {
 	}
 	return projects, nil
 }
+
 // GetProjectUsers retrieves all users that a given project is shared with.
 func (client *ApiClient) GetProjectUsers(projectID int) ([]UserWithRight, error) {
 	apiEndpoint := fmt.Sprintf("/projects/%d/users", projectID)
@@ -223,6 +224,7 @@ func (client *ApiClient) GetProjectUsers(projectID int) ([]UserWithRight, error)
 
 	return usersWithRights, nil
 }
+
 // GetProject retrieves a single project by its ID.
 func (client *ApiClient) GetProject(projectID int) (Project, error) {
 	apiEndpoint := fmt.Sprintf("/projects/%d", projectID)
