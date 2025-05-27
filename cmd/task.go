@@ -38,10 +38,8 @@ var newCmd = &cobra.Command{
 			ProjectID: projectId,
 		}
 
-		if Verbose {
-			ApiClient.Verbose = true
-		}
-		createdTask, err := ApiClient.CreateTask(projectId, task)
+		// verbose mode can be handled inside the service adapter later
+		createdTask, err := Svc.Task.CreateTask(projectId, task)
 		if err != nil {
 			fmt.Println("Error creating task:", err)
 			return
@@ -58,13 +56,13 @@ var doneCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		taskID, _ := strconv.Atoi(args[0])
-		task, err := ApiClient.GetTask(taskID)
+		task, err := Svc.Task.GetTask(taskID)
 		if err != nil {
 			fmt.Println("Error getting task:", err)
 			return
 		}
 		task.Done = !task.Done // Toggle the done status
-		updatedTask, err := ApiClient.UpdateTask(taskID, task)
+		updatedTask, err := Svc.Task.UpdateTask(taskID, task)
 		if err != nil {
 			fmt.Println("Error updating task:", err)
 			return
@@ -84,7 +82,7 @@ var showCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		taskID, _ := strconv.Atoi(args[0])
-		task, err := ApiClient.GetTask(taskID)
+		task, err := Svc.Task.GetTask(taskID)
 		if err != nil {
 			fmt.Println("Error getting task:", err)
 			return
@@ -103,7 +101,7 @@ var projectsCmd = &cobra.Command{
 	Short: "List all projects",
 	Long:  `List all the projects from the API.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		projects, err := ApiClient.GetAllProjects()
+		projects, err := Svc.Project.GetAllProjects()
 		if err != nil {
 			fmt.Println("Error retrieving projects:", err)
 			return
@@ -133,7 +131,7 @@ var assignedCmd = &cobra.Command{
 			fmt.Println("Error converting task ID:", err)
 			return
 		}
-		assignees, err := ApiClient.GetTaskAssignees(taskID)
+		assignees, err := Svc.Task.GetTaskAssignees(taskID)
 		if err != nil {
 			fmt.Println("Error getting assignees for task:", err)
 			return
@@ -181,7 +179,7 @@ var editCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		taskID, _ := strconv.Atoi(args[0])
-		task, err := ApiClient.GetTask(taskID)
+		task, err := Svc.Task.GetTask(taskID)
 		if err != nil {
 			fmt.Println("Error getting task:", err)
 			return
@@ -230,7 +228,7 @@ var editCmd = &cobra.Command{
 		}
 
 		// Save the updated task to the API
-		_, err = ApiClient.UpdateTask(taskID, task)
+		_, err = Svc.Task.UpdateTask(taskID, task)
 		if err != nil {
 			fmt.Println("Error updating task:", err)
 			return
