@@ -78,7 +78,7 @@ turn-around:
 
 4.2 [M][S] Make `login` explicit command; remove network I/O from `PersistentPreRun`
 
-4.3 [M][S] Add `--project, -P` flag to `new` (default from config)
+4.3 [M][S] Add `--project, -P` flag to `new` (default from config) — DONE
 
 4.4 [M][S] Return non-zero exit code on command errors
 
