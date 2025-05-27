@@ -13,6 +13,21 @@ Legend
 [EST]   S = <½ day, M = 1-2 days, L = 3 days+
 
 --------------------------------------------------------------------
+Quick MCP Implementation Roadmap (Critical Path)
+--------------------------------------------------------------------
+Focus on the minimum set of refactors required for a fast MCP server
+turn-around:
+
+  1. [Task 1.5] Add `server/mcp` package – listener & graceful shutdown  
+  2. [Task 1.2] Introduce `internal/service` interfaces – decouple CLI / server  
+  3. [Task 2.1] Add `context.Context` to all ApiClient methods  
+  4. [Task 4.1] Inject dependencies instead of globals  
+  5. [Task 2.3] Share a single `http.Client` with timeouts  
+  6. [Task 7.2] Handle signals & graceful shutdown in server main  
+  7. [Task 1.3] Move Vikunja REST adapter to `adapter/vikunja`  
+  8. [Task 7.1] Write MCP ⇄ core mapping spec (document)
+
+--------------------------------------------------------------------
 1. Project Structure & Layering
 --------------------------------------------------------------------
 1.1 [H][M] Create `internal/core` package with pure domain models  
