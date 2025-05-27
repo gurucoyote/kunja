@@ -37,7 +37,7 @@ turn-around:
 1.2 [H][L] Introduce `internal/service` interfaces  — DONE  
     • TaskService, ProjectService, AuthService …
 
-1.3 [H][M] Move Vikunja REST client to `adapter/vikunja`  
+1.3 [H][M] Move Vikunja REST client to `adapter/vikunja` — DONE  
     • Implement service interfaces using existing ApiClient
 
 1.4 [M][M] Restructure CLI into `cmd/cli`  
@@ -50,7 +50,7 @@ turn-around:
 --------------------------------------------------------------------
 2.1 [H][M] Add `ctx context.Context` to all ApiClient methods — DONE
 
-2.2 [H][S] Replace duplicate verbs with generic `request(ctx, method, path, body)`
+2.2 [H][S] Replace duplicate verbs with generic `request(ctx, method, path, body)` — DONE
 
 2.3 [H][S] Share a single `http.Client` with  
     • Timeout (15 s)  
