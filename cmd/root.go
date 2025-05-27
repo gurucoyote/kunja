@@ -46,6 +46,10 @@ var rootCmd = &cobra.Command{
 	Short: "A CLI client for the Vikunja task management API",
 	Long:  `A CLI client for the Vikunja task management API. It allows you to interact with the Vikunja API from the command line.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		// Skip authentication check when running the `login` command
+		if cmd.Name() == "login" {
+			return
+		}
 		token := viper.GetString("token")
 		if token == "" {
 			fmt.Println("No token found – please run `kunja login` first.")
