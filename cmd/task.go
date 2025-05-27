@@ -147,9 +147,6 @@ var usersCmd = &cobra.Command{
 	Short: "List all users",
 	Long:  `List all the users from the API.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if Verbose {
-			ApiClient.Verbose = true
-		}
 		users, err := Svc.User.GetAllUsers()
 		if err != nil {
 			fmt.Println("Error retrieving users:", err)
