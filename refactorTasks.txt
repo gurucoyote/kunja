@@ -65,7 +65,7 @@ turn-around:
 --------------------------------------------------------------------
 3.1 [H][M] Implement token cache & refresh flow
 
-3.2 [H][M] Remove plaintext password from `config.yaml`  
+3.2 [H][M] Remove plaintext password from `config.yaml` — OPTIONAL  
     • Support env vars + OS keyring (github.com/zalando/go-keyring)
 
 3.3 [M][S] Harden `EditStringInEditor`  
