@@ -13,7 +13,7 @@ import (
 var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Authenticate with the Vikunja API and store the token in the config",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
 		username := viper.GetString("username")
 		password := viper.GetString("password")
@@ -21,7 +21,7 @@ var loginCmd = &cobra.Command{
 
 		if username == "" || password == "" || baseURL == "" {
 			fmt.Println("username, password and baseurl must be set (flags, env or config)")
-			return
+			return fmt.Errorf("username, password and baseurl must be set")
 		}
 
 		client := api.NewApiClient(baseURL, "")
@@ -30,16 +30,17 @@ var loginCmd = &cobra.Command{
 		token, err := adapter.Login(ctx, username, password, "")
 		if err != nil {
 			fmt.Println("Login failed:", err)
-			return
+			return fmt.Errorf("login failed: %w", err)
 		}
 
 		viper.Set("token", token)
 		if err := viper.WriteConfig(); err != nil {
 			fmt.Println("Failed to write config:", err)
-			return
+			return fmt.Errorf("failed to write config: %w", err)
 		}
 
 		fmt.Println("Login successful – token saved to config.")
+		return nil
 	},
 }
 

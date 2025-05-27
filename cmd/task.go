@@ -17,7 +17,7 @@ var newCmd = &cobra.Command{
 	Use:   "new",
 	Short: "Create a new task",
 	Long:  `Create a new task using the provided title and due date.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		title := strings.Join(args, " ")
 		svc := getServices(cmd)
 		due, _ := cmd.Flags().GetString("due")
@@ -28,7 +28,7 @@ var newCmd = &cobra.Command{
 			dueDate, err = time.Parse("2006-01-02", due)
 			if err != nil {
 				fmt.Println("Error parsing due date:", err)
-				return
+				return err
 			}
 			// fmt.Println("due: ", dueDate)
 		}
@@ -38,7 +38,7 @@ var newCmd = &cobra.Command{
 			projects, err := svc.Project.GetAllProjects(cmd.Context())
 			if err != nil {
 				fmt.Println("Error retrieving projects:", err)
-				return
+				return err
 			}
 			var options []string
 			for _, p := range projects {
@@ -51,7 +51,7 @@ var newCmd = &cobra.Command{
 			}
 			if err := survey.AskOne(prompt, &selected); err != nil {
 				fmt.Println("Project selection cancelled")
-				return
+				return fmt.Errorf("project selection cancelled")
 			}
 			parts := strings.SplitN(selected, ":", 2)
 			projectId, _ = strconv.Atoi(strings.TrimSpace(parts[0]))
@@ -67,10 +67,11 @@ var newCmd = &cobra.Command{
 		createdTask, err := svc.Task.CreateTask(cmd.Context(), projectId, task)
 		if err != nil {
 			fmt.Println("Error creating task:", err)
-			return
+			return err
 		}
 
 		fmt.Println("Task created successfully:", createdTask.ID)
+		return nil
 	},
 }
 
@@ -79,25 +80,26 @@ var doneCmd = &cobra.Command{
 	Short: "Mark a task as done",
 	Long:  `Mark a task as done using the provided task ID.`,
 	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		taskID, _ := strconv.Atoi(args[0])
 		svc := getServices(cmd)
 		task, err := svc.Task.GetTask(cmd.Context(), taskID)
 		if err != nil {
 			fmt.Println("Error getting task:", err)
-			return
+			return err
 		}
 		task.Done = !task.Done // Toggle the done status
 		updatedTask, err := svc.Task.UpdateTask(cmd.Context(), taskID, task)
 		if err != nil {
 			fmt.Println("Error updating task:", err)
-			return
+			return err
 		}
 		if updatedTask.Done {
 			fmt.Println("Task marked as done successfully")
 		} else {
 			fmt.Println("Task marked as not done successfully")
 		}
+		return nil
 	},
 }
 
