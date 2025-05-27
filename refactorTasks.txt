@@ -30,7 +30,7 @@ turn-around:
 --------------------------------------------------------------------
 1. Project Structure & Layering
 --------------------------------------------------------------------
-1.1 [H][M] Create `internal/core` package with pure domain models  
+1.1 [H][M] Create `internal/core` package with pure domain models — DONE  
     • Move api/types.go structs (Task, Project, …) and logic  
     • Keep zero dependencies except stdlib
 
@@ -52,11 +52,11 @@ turn-around:
 
 2.2 [H][S] Replace duplicate verbs with generic `request(ctx, method, path, body)` — DONE
 
-2.3 [H][S] Share a single `http.Client` with  
+2.3 [H][S] Share a single `http.Client` with — DONE  
     • Timeout (15 s)  
     • Transport keep-alive tuning
 
-2.4 [M][S] Switch from deprecated `io/ioutil` → `io` + `os`
+2.4 [M][S] Switch from deprecated `io/ioutil` → `io` + `os` — DONE
 
 2.5 [M][S] Error handling  
     • Attempt JSON decode; on fail include first 256 B of body
@@ -68,7 +68,7 @@ turn-around:
 3.2 [H][M] Remove plaintext password from `config.yaml` — OPTIONAL  
     • Support env vars + OS keyring (github.com/zalando/go-keyring)
 
-3.3 [M][S] Harden `EditStringInEditor`  
+3.3 [M][S] Harden `EditStringInEditor` — DONE  
     • Use `exec.Command(editor, file)` (no shell)  
     • Default to `vi` if $EDITOR empty
 --------------------------------------------------------------------
