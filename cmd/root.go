@@ -136,7 +136,7 @@ var projectUsersCmd = &cobra.Command{
 		projectID, err := strconv.Atoi(args[0])
 		if err != nil {
 			fmt.Println("Error: Project ID must be a number")
-			return
+			return fmt.Errorf("project ID must be a number")
 		}
 
 		svc := getServices(cmd)
