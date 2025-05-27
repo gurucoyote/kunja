@@ -64,7 +64,7 @@ var rootCmd = &cobra.Command{
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		allTasks, err := ApiClient.GetAllTasks(api.GetAllTasksParams{})
+		allTasks, err := Svc.Task.GetAllTasks(api.GetAllTasksParams{})
 		if err != nil {
 			fmt.Println("Error getting tasks:", err)
 			return
@@ -136,14 +136,14 @@ var projectUsersCmd = &cobra.Command{
 			return
 		}
 
-		project, err := ApiClient.GetProject(projectID)
+		project, err := Svc.Project.GetProject(projectID)
 		if err != nil {
 			fmt.Printf("Error retrieving project: %s\n", err)
 			return
 		}
 		fmt.Printf("Owner: ID: %d, Username: %s\n", project.Owner.ID, project.Owner.Username)
 
-		users, err := ApiClient.GetProjectUsers(projectID)
+		users, err := Svc.Project.GetProjectUsers(projectID)
 		if err != nil {
 			fmt.Printf("Error retrieving project users: %s\n", err)
 			return
