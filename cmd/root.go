@@ -55,12 +55,15 @@ var rootCmd = &cobra.Command{
 		client := api.NewApiClient(viper.GetString("baseUrl"), token)
 		adapter := vikunja.New(client)
 
-		Svc = Services{
+		services := Services{
 			Auth:    adapter,
 			Task:    adapter,
 			Project: adapter,
 			User:    adapter,
 		}
+
+		ctx := context.WithValue(cmd.Context(), servicesKey, services)
+		cmd.SetContext(ctx)
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		svc := getServices(cmd)
