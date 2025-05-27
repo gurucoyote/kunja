@@ -10,6 +10,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2" // Import the survey library
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var newCmd = &cobra.Command{
@@ -31,7 +32,30 @@ var newCmd = &cobra.Command{
 			// fmt.Println("due: ", dueDate)
 		}
 
-		projectId := 1
+		projectId := viper.GetInt("project")
+		if projectId == 0 {
+			projects, err := Svc.Project.GetAllProjects()
+			if err != nil {
+				fmt.Println("Error retrieving projects:", err)
+				return
+			}
+			var options []string
+			for _, p := range projects {
+				options = append(options, fmt.Sprintf("%d: %s", p.ID, p.Title))
+			}
+			var selected string
+			prompt := &survey.Select{
+				Message: "Select project:",
+				Options: options,
+			}
+			if err := survey.AskOne(prompt, &selected); err != nil {
+				fmt.Println("Project selection cancelled")
+				return
+			}
+			parts := strings.SplitN(selected, ":", 2)
+			projectId, _ = strconv.Atoi(strings.TrimSpace(parts[0]))
+		}
+
 		task := api.Task{
 			Title:     title,
 			DueDate:   dueDate,
@@ -160,6 +184,8 @@ var usersCmd = &cobra.Command{
 
 func init() {
 	newCmd.Flags().StringP("due", "d", "", "Due date for the task")
+	newCmd.Flags().IntP("project", "P", 0, "Project ID to create the task in")
+	viper.BindPFlag("project", newCmd.Flags().Lookup("project"))
 	rootCmd.AddCommand(newCmd)
 
 	rootCmd.AddCommand(doneCmd)
