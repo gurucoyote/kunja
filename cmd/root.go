@@ -132,7 +132,7 @@ var projectUsersCmd = &cobra.Command{
 	Use:   "project-users [PROJECT_ID]",
 	Short: "List all users a project is shared with",
 	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		projectID, err := strconv.Atoi(args[0])
 		if err != nil {
 			fmt.Println("Error: Project ID must be a number")
@@ -143,19 +143,20 @@ var projectUsersCmd = &cobra.Command{
 		project, err := svc.Project.GetProject(cmd.Context(), projectID)
 		if err != nil {
 			fmt.Printf("Error retrieving project: %s\n", err)
-			return
+			return err
 		}
 		fmt.Printf("Owner: ID: %d, Username: %s\n", project.Owner.ID, project.Owner.Username)
 
 		users, err := svc.Project.GetProjectUsers(cmd.Context(), projectID)
 		if err != nil {
 			fmt.Printf("Error retrieving project users: %s\n", err)
-			return
+			return err
 		}
 
 		for _, user := range users {
 			fmt.Printf("User: ID: %d, Username: %s, Right: %d\n", user.ID, user.Username, user.Right)
 		}
+		return nil
 	},
 }
 

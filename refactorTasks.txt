@@ -80,7 +80,7 @@ turn-around:
 
 4.3 [M][S] Add `--project, -P` flag to `new` (default from config) — DONE
 
-4.4 [M][S] Return non-zero exit code on command errors
+4.4 [M][S] Return non-zero exit code on command errors — DONE
 
 4.5 [L][M] Provide flag alternatives for interactive survey prompts
 --------------------------------------------------------------------

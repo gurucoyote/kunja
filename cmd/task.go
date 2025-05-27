@@ -108,20 +108,21 @@ var showCmd = &cobra.Command{
 	Short: "Show task details",
 	Long:  `Show the details of a task in raw indented JSON format.`,
 	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		taskID, _ := strconv.Atoi(args[0])
 		svc := getServices(cmd)
 		task, err := svc.Task.GetTask(cmd.Context(), taskID)
 		if err != nil {
 			fmt.Println("Error getting task:", err)
-			return
+			return err
 		}
 		jsonTask, err := json.MarshalIndent(&task, "", "  ")
 		if err != nil {
 			fmt.Println("Error marshaling task to JSON:", err)
-			return
+			return err
 		}
 		fmt.Println(string(jsonTask))
+		return nil
 	},
 }
 
@@ -129,19 +130,20 @@ var projectsCmd = &cobra.Command{
 	Use:   "projects",
 	Short: "List all projects",
 	Long:  `List all the projects from the API.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		svc := getServices(cmd)
 		projects, err := svc.Project.GetAllProjects(cmd.Context())
 		if err != nil {
 			fmt.Println("Error retrieving projects:", err)
-			return
+			return err
 		}
 		jsonProjects, err := json.MarshalIndent(&projects, "", "  ")
 		if err != nil {
 			fmt.Println("Error marshaling projects to JSON:", err)
-			return
+			return err
 		}
 		fmt.Println(string(jsonProjects))
+		return nil
 	},
 }
 
@@ -155,21 +157,22 @@ var assignedCmd = &cobra.Command{
 	Short: "List assignees of a task",
 	Long:  `List all the assignees assigned to a task using the provided task ID.`,
 	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		taskID, err := strconv.Atoi(args[0])
 		if err != nil {
 			fmt.Println("Error converting task ID:", err)
-			return
+			return err
 		}
 		svc := getServices(cmd)
 		assignees, err := svc.Task.GetTaskAssignees(cmd.Context(), taskID)
 		if err != nil {
 			fmt.Println("Error getting assignees for task:", err)
-			return
+			return err
 		}
 		for _, assignee := range assignees {
 			fmt.Printf("ID: %d, Username: %s, Name: %s\n", assignee.ID, assignee.Username, assignee.Name)
 		}
+		return nil
 	},
 }
 
@@ -177,16 +180,17 @@ var usersCmd = &cobra.Command{
 	Use:   "users",
 	Short: "List all users",
 	Long:  `List all the users from the API.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		svc := getServices(cmd)
 		users, err := svc.User.GetAllUsers(cmd.Context())
 		if err != nil {
 			fmt.Println("Error retrieving users:", err)
-			return
+			return err
 		}
 		for _, user := range users {
 			fmt.Printf("ID: %d, Username: %s, Name: %s\n", user.ID, user.Username, user.Name)
 		}
+		return nil
 	},
 }
 
@@ -208,13 +212,13 @@ var editCmd = &cobra.Command{
 	Short: "Edit a task",
 	Long:  `Edit a task's title, description, or due date.`,
 	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		taskID, _ := strconv.Atoi(args[0])
 		svc := getServices(cmd)
 		task, err := svc.Task.GetTask(cmd.Context(), taskID)
 		if err != nil {
 			fmt.Println("Error getting task:", err)
-			return
+			return err
 		}
 
 		// Define the options for editing
@@ -263,8 +267,9 @@ var editCmd = &cobra.Command{
 		_, err = svc.Task.UpdateTask(cmd.Context(), taskID, task)
 		if err != nil {
 			fmt.Println("Error updating task:", err)
-			return
+			return err
 		}
 		fmt.Println("Task updated successfully")
+		return nil
 	},
 }
