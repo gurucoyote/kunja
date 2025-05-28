@@ -15,7 +15,7 @@ import (
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/spf13/cobra"
 
-	// "kunja/pkg"
+	"kunja/pkg"
 )
 
 var mcpLog string
