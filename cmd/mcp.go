@@ -169,6 +169,44 @@ func buildMCPServer() *server.MCPServer {
 	})
 	BuiltinTools = append(BuiltinTools, doneTool)
 
+	// ------------------------------------------------------------------
+	// Native MCP “edit” tool (update task fields)
+	// ------------------------------------------------------------------
+	editTool := mcp.NewTool(
+		"edit",
+		mcp.WithDescription("Edit a task (title, description and/or due date)."),
+		mcp.WithNumber("id", mcp.Required(), mcp.Description("task ID")),
+		mcp.WithString("title", mcp.Description("new title")),
+		mcp.WithString("description", mcp.Description("new description")),
+		mcp.WithString("due", mcp.Description("new due date YYYY-MM-DD")),
+	)
+	s.AddTool(editTool, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		args, _ := req.Params.Arguments.(map[string]interface{})
+
+		idFloat, ok := args["id"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("id argument is required")
+		}
+		title, _ := args["title"].(string)
+		desc, _ := args["description"].(string)
+		due, _ := args["due"].(string)
+
+		if title == "" && desc == "" && due == "" {
+			return nil, fmt.Errorf("provide at least one of title, description or due")
+		}
+
+		ctx, svc, err := prepareServices(ctx)
+		if err != nil {
+			return nil, err
+		}
+		out, err := editTaskSimple(ctx, svc, int(idFloat), title, desc, due)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(out), nil
+	})
+	BuiltinTools = append(BuiltinTools, editTool)
+
 	return s
 }
 

@@ -232,24 +232,12 @@ var editCmd = &cobra.Command{
 		}
 
 		if scriptable {
-			if newTitle != "" {
-				task.Title = newTitle
-			}
-			if newDesc != "" {
-				task.Description = newDesc
-			}
-			if newDue != "" {
-				parsed, err := time.Parse("2006-01-02", newDue)
-				if err != nil {
-					return fmt.Errorf("invalid --due: %w", err)
-				}
-				task.DueDate = parsed
-			}
-			if _, err := svc.Task.UpdateTask(cmd.Context(), taskID, task); err != nil {
+			msg, err := editTaskSimple(cmd.Context(), svc, taskID, newTitle, newDesc, newDue)
+			if err != nil {
 				fmt.Println("Error updating task:", err)
 				return err
 			}
-			fmt.Println("Task updated successfully")
+			fmt.Println(msg)
 			return nil
 		}
 		// ----------------------------------------------------------------
@@ -383,4 +371,39 @@ func toggleTaskDone(ctx context.Context, svc Services, taskID int) (string, erro
 		return "Task marked as done successfully", nil
 	}
 	return "Task marked as not done successfully", nil
+}
+
+// ---------------------------------------------------------------------
+// editTaskSimple – shared helper for non-interactive task updates
+// ---------------------------------------------------------------------
+func editTaskSimple(ctx context.Context, svc Services, taskID int,
+	title, desc, due string) (string, error) {
+
+	if title == "" && desc == "" && due == "" {
+		return "", fmt.Errorf("at least one of --title/--description/--due is required")
+	}
+
+	task, err := svc.Task.GetTask(ctx, taskID)
+	if err != nil {
+		return "", err
+	}
+
+	if title != "" {
+		task.Title = title
+	}
+	if desc != "" {
+		task.Description = desc
+	}
+	if due != "" {
+		dt, err := time.Parse("2006-01-02", due)
+		if err != nil {
+			return "", fmt.Errorf("invalid --due: %w", err)
+		}
+		task.DueDate = dt
+	}
+
+	if _, err := svc.Task.UpdateTask(ctx, taskID, task); err != nil {
+		return "", err
+	}
+	return "Task updated successfully", nil
 }
