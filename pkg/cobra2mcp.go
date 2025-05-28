@@ -3,20 +3,21 @@ package pkg
 import (
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 // CobraToMcp converts a Cobra command into an MCP tool specification
 // and attaches the supplied handler.
-func CobraToMcp(cmd *cobra.Command, h mcp.ToolHandler) *mcp.Tool {
+func CobraToMcp(
+	cmd *cobra.Command,
+	h func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error),
+) *mcp.Tool {
 	var opts []mcp.ToolOption
 
-	cmd.Flags().VisitAll(func(f *cobra.Flag) {
+	cmd.Flags().VisitAll(func(f *pflag.Flag) {
 		switch f.Value.Type() {
 		case "string":
 			opt := mcp.WithString(f.Name, mcp.Description(f.Usage))
-			if f.Required {
-				opt = mcp.WithString(f.Name, mcp.Required(), mcp.Description(f.Usage))
-			}
 			opts = append(opts, opt)
 		case "int":
 			opts = append(opts, mcp.WithNumber(f.Name, mcp.Description(f.Usage)))
