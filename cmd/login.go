@@ -13,6 +13,7 @@ import (
 var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Authenticate with the Vikunja API and store the token in the config",
+	Annotations: map[string]string{"skip_mcp": "true"},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
 		username := viper.GetString("username")

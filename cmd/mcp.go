@@ -21,6 +21,7 @@ var mcpLog string
 var mcpCmd = &cobra.Command{
 	Use:   "mcp",
 	Short: "Run Kunja as an MCP server over stdio",
+	Annotations: map[string]string{"skip_mcp": "true"},
 	RunE:  runMCP,
 }
 
@@ -46,7 +47,7 @@ func runMCP(_ *cobra.Command, _ []string) error {
 	sort.Slice(cmds, func(i, j int) bool { return cmds[i].Name() < cmds[j].Name() })
 
 	for _, c := range cmds {
-		if c.Hidden {
+		if c.Hidden || c.Annotations["skip_mcp"] == "true" {
 			continue
 		}
 		tool := pkg.CobraToMcp(c)
