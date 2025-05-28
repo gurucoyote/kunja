@@ -1,6 +1,8 @@
 package pkg
 
 import (
+	"strings"
+
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -37,11 +39,17 @@ func CobraToMcp(cmd *cobra.Command) mcp.Tool {
 		}
 	})
 
+	// Prefer the long description for MCP if available, otherwise fall back to short.
+	desc := strings.TrimSpace(cmd.Short)
+	if cmd.Long != "" {
+		desc = strings.TrimSpace(cmd.Long)
+	}
+
 	return mcp.NewTool(
 		cmd.Use,
 		append(
 			[]mcp.ToolOption{
-				mcp.WithDescription(cmd.Short),
+				mcp.WithDescription(desc),
 			},
 			opts...,
 		)...,
