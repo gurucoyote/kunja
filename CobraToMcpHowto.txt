@@ -41,7 +41,7 @@ import (
 
 // CobraToMcp turns a *cobra.Command into an *mcp.Tool.
 // Supply the handler that calls your business logic.
-func CobraToMcp(cmd *cobra.Command, h mcp.ToolHandler) *mcp.Tool {
+func CobraToMcp(cmd *cobra.Command) mcp.Tool {
 	var opts []mcp.ToolOption
 	cmd.Flags().VisitAll(func(f *cobra.Flag) {
 		switch f.Value.Type() {
