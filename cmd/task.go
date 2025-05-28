@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -68,22 +69,12 @@ var doneCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		taskID, _ := strconv.Atoi(args[0])
 		svc := getServices(cmd)
-		task, err := svc.Task.GetTask(cmd.Context(), taskID)
-		if err != nil {
-			fmt.Println("Error getting task:", err)
-			return err
-		}
-		task.Done = !task.Done // Toggle the done status
-		updatedTask, err := svc.Task.UpdateTask(cmd.Context(), taskID, task)
+		msg, err := toggleTaskDone(cmd.Context(), svc, taskID)
 		if err != nil {
 			fmt.Println("Error updating task:", err)
 			return err
 		}
-		if updatedTask.Done {
-			fmt.Println("Task marked as done successfully")
-		} else {
-			fmt.Println("Task marked as not done successfully")
-		}
+		fmt.Println(msg)
 		return nil
 	},
 }
@@ -139,23 +130,12 @@ var projectsCmd = &cobra.Command{
 	Long:  `List all the projects from the API.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		svc := getServices(cmd)
-		projects, err := svc.Project.GetAllProjects(cmd.Context())
+		out, err := buildProjectList(cmd.Context(), svc, Verbose)
 		if err != nil {
 			fmt.Println("Error retrieving projects:", err)
 			return err
 		}
-
-		// human-friendly table output
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-		fmt.Fprintln(w, "ID\tTitle\tFav")
-		for _, p := range projects {
-			fav := ""
-			if p.IsFavorite {
-				fav = "★"
-			}
-			fmt.Fprintf(w, "%d\t%s\t%s\n", p.ID, p.Title, fav)
-		}
-		w.Flush()
+		fmt.Print(out)
 		return nil
 	},
 }
@@ -355,4 +335,53 @@ func createTaskSimple(ctx context.Context, svc Services, title, dueStr string, p
 		return "", err
 	}
 	return fmt.Sprintf("Task created successfully: %d", created.ID), nil
+}
+
+// ---------------------------------------------------------------------
+// Shared helpers used by both CLI commands and native MCP tools
+// ---------------------------------------------------------------------
+
+// buildProjectList returns a table (or JSON when verbose) of all projects.
+func buildProjectList(ctx context.Context, svc Services, verbose bool) (string, error) {
+	projects, err := svc.Project.GetAllProjects(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	// pretty-print JSON for verbose output
+	if verbose {
+		if pretty, err := json.MarshalIndent(projects, "", "  "); err == nil {
+			return string(pretty) + "\n", nil
+		}
+	}
+
+	var buf bytes.Buffer
+	w := tabwriter.NewWriter(&buf, 0, 0, 2, ' ', 0)
+	fmt.Fprintln(w, "ID\tTitle\tFav")
+	for _, p := range projects {
+		fav := ""
+		if p.IsFavorite {
+			fav = "★"
+		}
+		fmt.Fprintf(w, "%d\t%s\t%s\n", p.ID, p.Title, fav)
+	}
+	w.Flush()
+	return buf.String(), nil
+}
+
+// toggleTaskDone flips the Done flag of a task and saves it.
+func toggleTaskDone(ctx context.Context, svc Services, taskID int) (string, error) {
+	task, err := svc.Task.GetTask(ctx, taskID)
+	if err != nil {
+		return "", err
+	}
+	task.Done = !task.Done
+	updated, err := svc.Task.UpdateTask(ctx, taskID, task)
+	if err != nil {
+		return "", err
+	}
+	if updated.Done {
+		return "Task marked as done successfully", nil
+	}
+	return "Task marked as not done successfully", nil
 }

@@ -117,6 +117,58 @@ func buildMCPServer() *server.MCPServer {
 	})
 	BuiltinTools = append(BuiltinTools, newTool)
 
+	// ------------------------------------------------------------------
+	// Native MCP “projects” tool (list projects)
+	// ------------------------------------------------------------------
+	projectsTool := mcp.NewTool(
+		"projects",
+		mcp.WithDescription("List projects; verbose=true returns raw JSON."),
+		mcp.WithBoolean("verbose", mcp.Description("raw JSON output")),
+	)
+	s.AddTool(projectsTool, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		argMap, _ := req.Params.Arguments.(map[string]interface{})
+		verbose, _ := argMap["verbose"].(bool)
+
+		ctx, svc, err := prepareServices(ctx)
+		if err != nil {
+			return nil, err
+		}
+		out, err := buildProjectList(ctx, svc, verbose)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(out), nil
+	})
+	BuiltinTools = append(BuiltinTools, projectsTool)
+
+	// ------------------------------------------------------------------
+	// Native MCP “done” tool (toggle task done)
+	// ------------------------------------------------------------------
+	doneTool := mcp.NewTool(
+		"done",
+		mcp.WithDescription("Toggle the done status of a task."),
+		mcp.WithNumber("id", mcp.Required(), mcp.Description("task ID")),
+	)
+	s.AddTool(doneTool, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		argMap, _ := req.Params.Arguments.(map[string]interface{})
+		idFloat, ok := argMap["id"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("id argument is required")
+		}
+		taskID := int(idFloat)
+
+		ctx, svc, err := prepareServices(ctx)
+		if err != nil {
+			return nil, err
+		}
+		out, err := toggleTaskDone(ctx, svc, taskID)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(out), nil
+	})
+	BuiltinTools = append(BuiltinTools, doneTool)
+
 	return s
 }
 
