@@ -18,7 +18,6 @@ import (
 
 	"kunja/adapter/vikunja"
 	"kunja/api"
-	"kunja/pkg"
 )
 
 /*
