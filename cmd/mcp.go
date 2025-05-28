@@ -59,6 +59,13 @@ func init() {
 		fmt.Fprintln(cmd.OutOrStdout(), "Run Kunja as an MCP server over stdio.")
 		fmt.Fprintln(cmd.OutOrStdout(), "Available tools:")
 
+		// Ensure the BuiltinTools slice is populated; this happens when the
+		// MCP server is built (registerBuiltinTools is called).  We avoid
+		// duplicate entries by only populating when the slice is still empty.
+		if len(BuiltinTools) == 0 {
+			_ = buildMCPServer()
+		}
+
 		// First show built-in diagnostic tools
 		for _, t := range BuiltinTools {
 			fmt.Fprintf(cmd.OutOrStdout(), "  %s  –  %s\n", t.Name, strings.TrimSpace(t.Description))
