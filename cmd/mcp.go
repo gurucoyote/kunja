@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -98,6 +99,11 @@ func runMCP(_ *cobra.Command, _ []string) error {
 // genericHandler converts MCP parameters to CLI flags and executes the Cobra command.
 func genericHandler(c *cobra.Command) func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		// ---- log incoming JSON request ---------------------------------
+		if raw, err := json.Marshal(req); err == nil {
+			log.Printf(">> %s\n", raw)
+		}
+
 		// Build CLI args from parameters
 		var args []string
 		var keys []string
@@ -150,8 +156,18 @@ func genericHandler(c *cobra.Command) func(ctx context.Context, req mcp.CallTool
 		os.Stdout = stdout
 
 		if execErr != nil {
+			log.Printf("!! %v\n", execErr)
 			return nil, execErr
 		}
-		return mcp.NewToolResultText(buf.String()), nil
+
+		// Prepare MCP result
+		result := mcp.NewToolResultText(buf.String())
+
+		// ---- log outgoing JSON response --------------------------------
+		if raw, err := json.Marshal(result); err == nil {
+			log.Printf("<< %s\n", raw)
+		}
+
+		return result, nil
 	}
 }
