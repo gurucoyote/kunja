@@ -68,7 +68,6 @@ var newCmd = &cobra.Command{
 		fmt.Println(msg)
 		return nil
 	},
-}
 
 var doneCmd = &cobra.Command{
 	Use:   "done",
