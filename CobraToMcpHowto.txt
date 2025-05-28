@@ -22,8 +22,6 @@ pkg/
  └─ cobra2mcp.go        ← generic Cobra→MCP converter
 cmd/
  └─ mcp.go              ← cobra sub-command that starts the MCP server
-internal/
- └─ logic.go (optional) ← pure business functions reused by CLI & MCP
 ```
 
 You **do not** touch existing `cmd/*.go` files except to import / invoke the
@@ -88,7 +86,6 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 
 	"kunja/pkg"          // path follows your module name
-	"kunja/internal/logic"
 )
 
 var mcpLog string
@@ -115,12 +112,8 @@ func runMCP(_ *cobra.Command, _ []string) error {
 
 	// Example: expose the existing `users` Cobra command.
 	userTool := pkg.CobraToMcp(usersCmd, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-		// business logic reuse
-		out, err := logic.ListUsers(ctx)
-		if err != nil {
-			return nil, err
-		}
-		return mcp.NewToolResultText(out), nil
+		// TODO: call your existing user-listing code here and return its output
+		return mcp.NewToolResultText("users output"), nil
 	})
 	s.AddTool(userTool, nil)
 
