@@ -28,6 +28,9 @@ var mcpLog string
 func buildMCPServer() *server.MCPServer {
 	s := server.NewMCPServer(AppName, Version)
 
+	// Register simple diagnostic tools that are not backed by Cobra.
+	registerBuiltinTools(s)
+
 	cmds := rootCmd.Commands()
 	sort.Slice(cmds, func(i, j int) bool { return cmds[i].Name() < cmds[j].Name() })
 
