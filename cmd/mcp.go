@@ -29,15 +29,17 @@ func buildMCPServer() *server.MCPServer {
 	// Register simple diagnostic tools that are not backed by Cobra.
 	registerBuiltinTools(s)
 
-	cmds := rootCmd.Commands()
-	sort.Slice(cmds, func(i, j int) bool { return cmds[i].Name() < cmds[j].Name() })
-
-	for _, c := range cmds {
-		if c.Hidden || c.Annotations["skip_mcp"] == "true" || c.Name() == "help" || c.Name() == "completion" {
-			continue
-		}
-		s.AddTool(pkg.CobraToMcp(c), genericHandler(c))
-	}
+	// Temporarily hide all Cobra-derived commands from the MCP server.
+	// (Re-enable by restoring the loop below.)
+	//
+	// cmds := rootCmd.Commands()
+	// sort.Slice(cmds, func(i, j int) bool { return cmds[i].Name() < cmds[j].Name() })
+	// for _, c := range cmds {
+	//     if c.Hidden || c.Annotations["skip_mcp"] == "true" || c.Name() == "help" || c.Name() == "completion" {
+	//         continue
+	//     }
+	//     s.AddTool(pkg.CobraToMcp(c), genericHandler(c))
+	// }
 	return s
 }
 
@@ -62,15 +64,7 @@ func init() {
 			fmt.Fprintf(cmd.OutOrStdout(), "  %s  –  %s\n", t.Name, strings.TrimSpace(t.Description))
 		}
 
-		// Then show Cobra-based tools
-		cmds := rootCmd.Commands()
-		sort.Slice(cmds, func(i, j int) bool { return cmds[i].Name() < cmds[j].Name() })
-		for _, c := range cmds {
-			if c.Hidden || c.Annotations["skip_mcp"] == "true" || c.Name() == "help" || c.Name() == "completion" {
-				continue
-			}
-			fmt.Fprintf(cmd.OutOrStdout(), "  %s  –  %s\n", c.Use, strings.TrimSpace(c.Short))
-		}
+		// Cobra-based tools are temporarily hidden from the MCP server.
 	})
 }
 
