@@ -8,7 +8,9 @@ import (
 	"log"
 	"os"
 	"sort"
-	"encoding/json"
+	"strings"
+
+	"github.com/spf13/pflag"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
@@ -48,14 +50,32 @@ func init() {
 	rootCmd.AddCommand(mcpCmd)
 	mcpCmd.Flags().StringVarP(&mcpLog, "log", "l", "kunja-mcp.log", "debug log file")
 
-	// Custom help prints the JSON tool catalogue produced by the same builder.
+	// Custom help prints a human-readable catalogue of all MCP tools.
 	mcpCmd.SetHelpFunc(func(cmd *cobra.Command, _ []string) {
-		s := buildMCPServer()
-		spec, _ := json.MarshalIndent(s.Handshake(), "", "  ")
-		fmt.Fprintf(cmd.OutOrStdout(),
-			"Run Kunja as an MCP server over stdio.\n\nAvailable tools:\n%s\n",
-			spec,
-		)
+		fmt.Fprintln(cmd.OutOrStdout(), "Run Kunja as an MCP server over stdio.\n")
+		fmt.Fprintln(cmd.OutOrStdout(), "Available tools:\n")
+
+		cmds := rootCmd.Commands()
+		sort.Slice(cmds, func(i, j int) bool { return cmds[i].Name() < cmds[j].Name() })
+
+		for _, c := range cmds {
+			if c.Hidden || c.Annotations["skip_mcp"] == "true" {
+				continue
+			}
+			fmt.Fprintf(cmd.OutOrStdout(), "  %s  –  %s\n", c.Use, strings.TrimSpace(c.Short))
+
+			c.Flags().VisitAll(func(f *pflag.Flag) {
+				req := ""
+				if _, ok := f.Annotations["mcp_required"]; ok {
+					req = " (required for MCP)"
+				}
+				fmt.Fprintf(cmd.OutOrStdout(), "      --%-12s %s%s\n", f.Name, f.Usage, req)
+			})
+			if c.Flags().NFlag() == 0 {
+				fmt.Fprintln(cmd.OutOrStdout(), "      (no flags)")
+			}
+			fmt.Fprintln(cmd.OutOrStdout())
+		}
 	})
 }
 
