@@ -47,8 +47,9 @@ func prepareServices(ctx context.Context) (context.Context, Services, error) {
 }
 
 func listHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	showAll, _ := req.Params.Arguments["all"].(bool)
-	verbose, _ := req.Params.Arguments["verbose"].(bool)
+	argMap, _ := req.Params.Arguments.(map[string]interface{})
+	showAll, _ := argMap["all"].(bool)
+	verbose, _ := argMap["verbose"].(bool)
 
 	ctx, svc, err := prepareServices(ctx)
 	if err != nil {
