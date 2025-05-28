@@ -132,6 +132,13 @@ func genericHandler(c *cobra.Command) func(ctx context.Context, req mcp.CallTool
 			}
 		}
 
+		// Append positional arguments (params.args) after flags
+		if rawArgs, ok := req.Params.Args.([]interface{}); ok {
+			for _, a := range rawArgs {
+				args = append(args, fmt.Sprint(a))
+			}
+		}
+
 		// Capture stdout and drain it concurrently to avoid pipe-buffer dead-locks.
 		var buf bytes.Buffer
 		stdout := os.Stdout
