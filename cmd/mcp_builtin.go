@@ -13,7 +13,7 @@ import (
 // even when the Cobra integration fails.
 func registerBuiltinTools(s *server.MCPServer) {
 	// ---- ping ---------------------------------------------------------
-	s.AddTool(&mcp.Tool{
+	s.AddTool(mcp.Tool{
 		Name:        "ping",
 		Description: "Return «pong» – verifies that the MCP server is alive.",
 	}, func(ctx context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -21,12 +21,9 @@ func registerBuiltinTools(s *server.MCPServer) {
 	})
 
 	// ---- echo ---------------------------------------------------------
-	s.AddTool(&mcp.Tool{
+	s.AddTool(mcp.Tool{
 		Name:        "echo",
 		Description: "Echo back the supplied text argument.",
-		Parameters: []mcp.ToolParam{
-			{Name: "text", Type: "string", Description: "text to echo", Required: true},
-		},
 	}, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		args, _ := req.Params.Arguments.(map[string]interface{})
 		text := fmt.Sprint(args["text"])
@@ -34,13 +31,9 @@ func registerBuiltinTools(s *server.MCPServer) {
 	})
 
 	// ---- sum ----------------------------------------------------------
-	s.AddTool(&mcp.Tool{
+	s.AddTool(mcp.Tool{
 		Name:        "sum",
 		Description: "Return the sum of two integers.",
-		Parameters: []mcp.ToolParam{
-			{Name: "a", Type: "integer", Required: true},
-			{Name: "b", Type: "integer", Required: true},
-		},
 	}, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		args, _ := req.Params.Arguments.(map[string]interface{})
 		// JSON numbers arrive as float64
