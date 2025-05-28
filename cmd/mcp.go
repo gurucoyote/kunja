@@ -65,8 +65,10 @@ func genericHandler(c *cobra.Command) func(ctx context.Context, req mcp.CallTool
 		var keys []string
 
 		// MCP v0.30.0 stores all arguments in the Arguments map.
-		argMap := req.Params.Arguments
-		if argMap == nil {
+		var argMap map[string]interface{}
+		if m, ok := req.Params.Arguments.(map[string]interface{}); ok {
+			argMap = m
+		} else {
 			argMap = map[string]interface{}{}
 		}
 
