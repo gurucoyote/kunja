@@ -51,7 +51,7 @@ func init() {
 	// Custom help prints the JSON tool catalogue produced by the same builder.
 	mcpCmd.SetHelpFunc(func(cmd *cobra.Command, _ []string) {
 		s := buildMCPServer()
-		spec, _ := json.MarshalIndent(s.Spec(), "", "  ")
+		spec, _ := json.MarshalIndent(s.Handshake(), "", "  ")
 		fmt.Fprintf(cmd.OutOrStdout(),
 			"Run Kunja as an MCP server over stdio.\n\nAvailable tools:\n%s\n",
 			spec,
