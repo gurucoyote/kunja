@@ -1,6 +1,8 @@
 package pkg
 
 import (
+	"context"
+
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -28,6 +30,12 @@ func CobraToMcp(
 
 	return mcp.NewTool(
 		cmd.Use,
-		append([]mcp.ToolOption{mcp.WithDescription(cmd.Short)}, opts...)...,
-	).WithHandler(h)
+		append(
+			[]mcp.ToolOption{
+				mcp.WithDescription(cmd.Short),
+				mcp.WithHandler(h),
+			},
+			opts...,
+		)...,
+	)
 }
