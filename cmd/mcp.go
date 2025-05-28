@@ -35,11 +35,7 @@ func buildMCPServer() *server.MCPServer {
 		if c.Name() != "list" {
 			continue
 		}
-		tool := pkg.CobraToMcp(c)
-		if tool.Parameters == nil { // ensure parameters is {} not null
-			tool.Parameters = map[string]interface{}{}
-		}
-		s.AddTool(tool, genericHandler(c))
+		s.AddTool(pkg.CobraToMcp(c), genericHandler(c))
 	}
 	return s
 }
