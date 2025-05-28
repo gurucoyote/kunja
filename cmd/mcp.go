@@ -60,11 +60,8 @@ func init() {
 		// Build a temporary MCP server and list its tools so that the help
 		// output always reflects exactly what an MCP client will see.
 		s := buildMCPServer()
-		// gather tools directly from the server registry (avoids API-version issues)
-		var tools []mcp.Tool
-		for _, t := range s.Tools {
-			tools = append(tools, t)
-		}
+		// Obtain the registered tools from the server.
+		tools := s.Tools()
 		sort.Slice(tools, func(i, j int) bool { return tools[i].Name < tools[j].Name })
 
 		for _, t := range tools {
