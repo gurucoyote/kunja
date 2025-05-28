@@ -336,7 +336,6 @@ var editCmd = &cobra.Command{
 		return nil
 	},
 }
-}
 
 // createTaskSimple contains the non-interactive business logic for creating a
 // task.  It is reused by both the CLI and the MCP “new” tool.
