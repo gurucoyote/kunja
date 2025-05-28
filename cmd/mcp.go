@@ -132,9 +132,9 @@ func genericHandler(c *cobra.Command) func(ctx context.Context, req mcp.CallTool
 			}
 		}
 
-		// Append positional arguments (params.args) after flags
-		if rawArgs, ok := req.Params.Args.([]interface{}); ok {
-			for _, a := range rawArgs {
+		// Append positional arguments when Arguments is an array (MCP positional args)
+		if rawSlice, ok := req.Params.Arguments.([]interface{}); ok {
+			for _, a := range rawSlice {
 				args = append(args, fmt.Sprint(a))
 			}
 		}
