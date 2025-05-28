@@ -49,8 +49,8 @@ func runMCP(_ *cobra.Command, _ []string) error {
 		if c.Hidden {
 			continue
 		}
-		tool := pkg.CobraToMcp(c, genericHandler(c))
-		s.AddTool(tool, nil)
+		tool := pkg.CobraToMcp(c)
+		s.AddTool(tool, genericHandler(c))
 	}
 
 	// Serve stdin/stdout
