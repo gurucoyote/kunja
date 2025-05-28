@@ -63,11 +63,11 @@ func Execute() {
 }
 
 var ExitCmd = &cobra.Command{
-	Use:     "exit",
-	Aliases: []string{"q", "Q", "bye"},
-	Short:   "Exit the application",
+	Use:         "exit",
+	Aliases:     []string{"q", "Q", "bye"},
+	Short:       "Exit the application",
 	Annotations: map[string]string{"skip_mcp": "true"},
-	Long:    `This command will exit the application.`,
+	Long:        `This command will exit the application.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("Goodbye!")
 		os.Exit(0)

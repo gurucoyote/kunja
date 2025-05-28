@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"kunja/api" // Added for api package
 	"kunja/adapter/vikunja"
+	"kunja/api" // Added for api package
 	"kunja/internal/service"
 	"os"
 	"os/exec"

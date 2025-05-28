@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 	"kunja/api"
 	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -26,10 +26,10 @@ var projectNewCmd = &cobra.Command{
 }
 
 var projectDelCmd = &cobra.Command{
-	Use:   "project-del [ID]",
-	Short: "Delete a project",
+	Use:         "project-del [ID]",
+	Short:       "Delete a project",
 	Annotations: map[string]string{"skip_mcp": "true"},
-	Args:  cobra.ExactArgs(1),
+	Args:        cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		id, _ := strconv.Atoi(args[0])
 		svc := getServices(cmd)

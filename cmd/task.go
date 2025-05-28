@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"kunja/api"
-	"os"
 	"strconv"
 	"strings"
 	"text/tabwriter"
