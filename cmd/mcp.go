@@ -126,11 +126,18 @@ func genericHandler(c *cobra.Command) func(ctx context.Context, req mcp.CallTool
 			}
 		}
 
-		// Capture stdout
+		// Capture stdout and drain it concurrently to avoid pipe-buffer dead-locks.
 		var buf bytes.Buffer
 		stdout := os.Stdout
 		r, w, _ := os.Pipe()
 		os.Stdout = w
+
+		// Drain the pipe while the command is running.
+		done := make(chan struct{})
+		go func() {
+			io.Copy(&buf, r)
+			close(done)
+		}()
 
 		// Execute the command
 		c.SetArgs(args)
@@ -138,8 +145,8 @@ func genericHandler(c *cobra.Command) func(ctx context.Context, req mcp.CallTool
 		execErr := c.Execute()
 
 		// Restore stdout
-		w.Close()
-		io.Copy(&buf, r)
+		w.Close()  // closing writer lets the copier finish
+		<-done     // wait until everything is copied
 		os.Stdout = stdout
 
 		if execErr != nil {
