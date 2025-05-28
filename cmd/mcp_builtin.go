@@ -19,7 +19,6 @@ func registerBuiltinTools(s *server.MCPServer) {
 	pingTool := mcp.Tool{
 		Name:        "ping",
 		Description: "Return «pong» – verifies that the MCP server is alive.",
-		Arguments:   []mcp.Argument{}, // -> {} instead of null in JSON
 	}
 	s.AddTool(pingTool, func(ctx context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		return mcp.NewToolResultText("pong"), nil
@@ -30,9 +29,6 @@ func registerBuiltinTools(s *server.MCPServer) {
 	echoTool := mcp.Tool{
 		Name:        "echo",
 		Description: "Echo back the supplied text argument.",
-		Arguments: []mcp.Argument{
-			{Name: "text", Type: "string", Description: "text to echo"},
-		},
 	}
 	s.AddTool(echoTool, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		args, _ := req.Params.Arguments.(map[string]interface{})
@@ -45,10 +41,6 @@ func registerBuiltinTools(s *server.MCPServer) {
 	sumTool := mcp.Tool{
 		Name:        "sum",
 		Description: "Return the sum of two integers.",
-		Arguments: []mcp.Argument{
-			{Name: "a", Type: "integer"},
-			{Name: "b", Type: "integer"},
-		},
 	}
 	s.AddTool(sumTool, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		args, _ := req.Params.Arguments.(map[string]interface{})
