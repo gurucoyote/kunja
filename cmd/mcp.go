@@ -14,9 +14,53 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
+	"kunja/adapter/vikunja"
+	"kunja/api"
 	"kunja/pkg"
 )
+
+/*
+prepareServices and listHandler provide a lightweight, MCP-native
+implementation of the “list” tool.  They bypass Cobra completely and call
+the shared business logic in buildTaskList(), so they do not rely on stdout
+redirection and cannot dead-lock.
+*/
+func prepareServices(ctx context.Context) (context.Context, Services, error) {
+	token := viper.GetString("token")
+	base := viper.GetString("baseurl")
+	if token == "" || base == "" {
+		return ctx, Services{}, fmt.Errorf("missing token or baseurl – run `kunja login` first")
+	}
+
+	client := api.NewApiClient(base, token)
+	adapter := vikunja.New(client)
+
+	svc := Services{
+		Auth:    adapter,
+		Task:    adapter,
+		Project: adapter,
+		User:    adapter,
+	}
+	ctx = context.WithValue(ctx, servicesKey, svc)
+	return ctx, svc, nil
+}
+
+func listHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	showAll, _ := req.Params.Arguments["all"].(bool)
+	verbose, _ := req.Params.Arguments["verbose"].(bool)
+
+	ctx, svc, err := prepareServices(ctx)
+	if err != nil {
+		return nil, err
+	}
+	out, err := buildTaskList(ctx, svc, verbose, showAll)
+	if err != nil {
+		return nil, err
+	}
+	return mcp.NewToolResultText(out), nil
+}
 
 var mcpLog string
 
@@ -29,14 +73,18 @@ func buildMCPServer() *server.MCPServer {
 	// Register simple diagnostic tools that are not backed by Cobra.
 	registerBuiltinTools(s)
 
-	// Re-enable only the 'list' command (convert others later).
-	cmds := rootCmd.Commands()
-	for _, c := range cmds {
-		if c.Name() != "list" {
-			continue
-		}
-		s.AddTool(pkg.CobraToMcp(c), genericHandler(c))
-	}
+	// ------------------------------------------------------------------
+	// Native MCP “list” tool (no Cobra dependency)
+	// ------------------------------------------------------------------
+	listTool := mcp.NewTool(
+		"list",
+		mcp.WithDescription("List tasks sorted by urgency; set all=true to include completed tasks."),
+		mcp.WithBoolean("all", mcp.Description("include completed tasks")),
+		mcp.WithBoolean("verbose", mcp.Description("return raw JSON instead of table")),
+	)
+	s.AddTool(listTool, listHandler)
+	BuiltinTools = append(BuiltinTools, listTool)
+
 	return s
 }
 
