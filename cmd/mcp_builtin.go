@@ -19,6 +19,7 @@ func registerBuiltinTools(s *server.MCPServer) {
 	pingTool := mcp.Tool{
 		Name:        "ping",
 		Description: "Return «pong» – verifies that the MCP server is alive.",
+		Parameters:  map[string]interface{}{}, // encode as {} not null
 	}
 	s.AddTool(pingTool, func(ctx context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		return mcp.NewToolResultText("pong"), nil
@@ -29,6 +30,13 @@ func registerBuiltinTools(s *server.MCPServer) {
 	echoTool := mcp.Tool{
 		Name:        "echo",
 		Description: "Echo back the supplied text argument.",
+		Parameters: map[string]interface{}{
+			"type": "object",
+			"properties": map[string]interface{}{
+				"text": map[string]interface{}{"type": "string"},
+			},
+			"required": []string{"text"},
+		},
 	}
 	s.AddTool(echoTool, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		args, _ := req.Params.Arguments.(map[string]interface{})
@@ -41,6 +49,14 @@ func registerBuiltinTools(s *server.MCPServer) {
 	sumTool := mcp.Tool{
 		Name:        "sum",
 		Description: "Return the sum of two integers.",
+		Parameters: map[string]interface{}{
+			"type": "object",
+			"properties": map[string]interface{}{
+				"a": map[string]interface{}{"type": "integer"},
+				"b": map[string]interface{}{"type": "integer"},
+			},
+			"required": []string{"a", "b"},
+		},
 	}
 	s.AddTool(sumTool, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		args, _ := req.Params.Arguments.(map[string]interface{})
