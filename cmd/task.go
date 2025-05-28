@@ -17,7 +17,7 @@ import (
 
 var newCmd = &cobra.Command{
 	Use:   "new",
-	Short: "Create a new task",
+	Short: "Create a new task in a project (--project) with optional --due",
 	Long:  `Create a new task using the provided title and due date.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		title := strings.Join(args, " ")
@@ -79,7 +79,7 @@ var newCmd = &cobra.Command{
 
 var doneCmd = &cobra.Command{
 	Use:   "done",
-	Short: "Mark a task as done",
+	Short: "Toggle the done status of a task (arg TASK_ID)",
 	Long:  `Mark a task as done using the provided task ID.`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -129,7 +129,7 @@ var deleteCmd = &cobra.Command{
 
 var showCmd = &cobra.Command{
 	Use:   "show",
-	Short: "Show task details",
+	Short: "Show details of a task (arg TASK_ID)",
 	Long:  `Show the details of a task in raw indented JSON format.`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -184,7 +184,7 @@ func init() {
 
 var assignedCmd = &cobra.Command{
 	Use:   "assigned",
-	Short: "List assignees of a task",
+	Short: "List assignees for a task (arg TASK_ID)",
 	Long:  `List all the assignees assigned to a task using the provided task ID.`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {

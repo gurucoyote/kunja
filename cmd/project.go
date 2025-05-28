@@ -11,7 +11,7 @@ import (
 
 var projectNewCmd = &cobra.Command{
 	Use:   "project-new [NAME]",
-	Short: "Create a new project",
+	Short: "Create a new project (arg NAME)",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")

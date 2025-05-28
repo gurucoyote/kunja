@@ -134,7 +134,7 @@ func init() {
 // projectUsersCmd represents the project-users command
 var projectUsersCmd = &cobra.Command{
 	Use:   "project-users [PROJECT_ID]",
-	Short: "List all users a project is shared with",
+	Short: "List users a project is shared with (arg PROJECT_ID)",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		projectID, err := strconv.Atoi(args[0])
