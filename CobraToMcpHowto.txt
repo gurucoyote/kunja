@@ -1,0 +1,204 @@
+# Integrating Cobra Commands with MCP Tools  
+_Automated metadata reuse & single-source business logic_
+
+This document shows **how to expose every existing Cobra command in this
+repository as an MCP tool** without duplicating names, descriptions or flag
+definitions.  It also lists the small helper files you need to add.
+
+---
+
+## 1  Why do this?
+
+* Prevent drift – command flags/descriptions live in one place (Cobra).
+* Less boilerplate – MCP tool specs are generated at runtime.
+* Unified tests – test the business function once, cover CLI + MCP.
+
+---
+
+## 2  Minimal file additions
+
+```
+pkg/
+ └─ cobra2mcp.go        ← generic Cobra→MCP converter
+cmd/
+ └─ mcp.go              ← cobra sub-command that starts the MCP server
+internal/
+ └─ logic.go (optional) ← pure business functions reused by CLI & MCP
+```
+
+You **do not** touch existing `cmd/*.go` files except to import / invoke the
+shared logic.
+
+---
+
+## 3  Helper: pkg/cobra2mcp.go
+
+```go
+package pkg
+
+import (
+	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/spf13/cobra"
+)
+
+// CobraToMcp turns a *cobra.Command into an *mcp.Tool.
+// Supply the handler that calls your business logic.
+func CobraToMcp(cmd *cobra.Command, h mcp.ToolHandler) *mcp.Tool {
+	var opts []mcp.ToolOption
+	cmd.Flags().VisitAll(func(f *cobra.Flag) {
+		switch f.Value.Type() {
+		case "string":
+			opt := mcp.WithString(f.Name, mcp.Description(f.Usage))
+			if f.Changed || f.Required {
+				opt = mcp.WithString(f.Name, mcp.Required(), mcp.Description(f.Usage))
+			}
+			opts = append(opts, opt)
+		case "int":
+			opts = append(opts, mcp.WithNumber(f.Name, mcp.Description(f.Usage)))
+		case "bool":
+			opts = append(opts, mcp.WithBoolean(f.Name, mcp.Description(f.Usage)))
+		}
+	})
+	return mcp.NewTool(cmd.Use,
+		append([]mcp.ToolOption{mcp.WithDescription(cmd.Short)}, opts...)...,
+	).WithHandler(h)
+}
+```
+
+Add the dependency:
+
+```bash
+go get github.com/mark3labs/mcp-go@latest
+```
+
+---
+
+## 4  MCP server launcher: cmd/mcp.go
+
+```go
+package cmd
+
+import (
+	"context"
+	"io"
+	"log"
+	"os"
+
+	"github.com/mark3labs/mcp-go/server"
+	"github.com/mark3labs/mcp-go/mcp"
+
+	"kunja/pkg"          // path follows your module name
+	"kunja/internal/logic"
+)
+
+var mcpLog string
+
+var mcpCmd = &cobra.Command{
+	Use:   "mcp",
+	Short: "Run Kunja as an MCP server over stdio",
+	RunE:  runMCP,
+}
+
+func init() {
+	rootCmd.AddCommand(mcpCmd)
+	mcpCmd.Flags().StringVarP(&mcpLog, "log", "l", "kunja-mcp.log", "debug log")
+}
+
+func runMCP(_ *cobra.Command, _ []string) error {
+	f, err := os.OpenFile(mcpLog, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	if err == nil {
+		defer f.Close()
+		log.SetOutput(io.MultiWriter(os.Stderr, f))
+	}
+
+	s := server.NewMCPServer("kunja", "0.1.0")
+
+	// Example: expose the existing `users` Cobra command.
+	userTool := pkg.CobraToMcp(usersCmd, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		// business logic reuse
+		out, err := logic.ListUsers(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(out), nil
+	})
+	s.AddTool(userTool, nil)
+
+	// TODO: loop over rootCmd.Commands() and register all automatically.
+
+	return server.ServeStdio(s)
+}
+```
+
+---
+
+## 5  Business logic extraction (example)
+
+```go
+// internal/logic/users.go
+package logic
+
+import (
+	"context"
+	"encoding/json"
+	"kunja/api"
+)
+
+// ListUsers returns pretty JSON string of all users.
+func ListUsers(ctx context.Context) (string, error) {
+	// obtain services from context the same way cmd/root.go does
+	svc := ctx.Value(servicesKey).(cmd.Services)
+	users, err := svc.User.GetAllUsers(ctx)
+	if err != nil {
+		return "", err
+	}
+	b, _ := json.MarshalIndent(users, "", "  ")
+	return string(b), nil
+}
+```
+
+Each Cobra command’s `RunE` becomes:
+
+```go
+out, err := logic.ListUsers(cmd.Context())
+if err != nil { … }
+fmt.Println(out)
+```
+
+---
+
+## 6  Automatic bulk registration (optional)
+
+Inside `runMCP` you can iterate:
+
+```go
+for _, c := range rootCmd.Commands() {
+	if c.Hidden { continue }
+	tool := pkg.CobraToMcp(c, genericHandler(c))
+	s.AddTool(tool, nil)
+}
+```
+
+The generic handler would:
+
+1. Convert `req.Params.Arguments` to CLI-like `[]string`.
+2. Execute `c.RunE` or `c.ExecuteContext`.
+
+---
+
+## 7  Running
+
+CLI mode (default):
+
+```bash
+kunja users
+```
+
+MCP mode:
+
+```bash
+kunja mcp
+```
+
+Your Kunja instance now speaks both human CLI and MCP without duplicated
+metadata.
