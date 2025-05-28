@@ -226,7 +226,11 @@ var usersCmd = &cobra.Command{
 func init() {
 	newCmd.Flags().StringP("due", "d", "", "Due date for the task")
 	newCmd.Flags().IntP("project", "P", 0, "Project ID to create the task in")
-	viper.BindPFlag("project", newCmd.Flags().Lookup("project"))
+
+	// Make project flag required for MCP (but optional for CLI).
+	f := newCmd.Flags().Lookup("project")
+	f.Annotations = map[string][]string{"mcp_required": {"true"}}
+	viper.BindPFlag("project", f)
 	rootCmd.AddCommand(newCmd)
 
 	rootCmd.AddCommand(doneCmd)

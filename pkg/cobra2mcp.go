@@ -12,14 +12,28 @@ func CobraToMcp(cmd *cobra.Command) mcp.Tool {
 	var opts []mcp.ToolOption
 
 	cmd.Flags().VisitAll(func(f *pflag.Flag) {
+		// Check if this flag is marked “required for MCP” via annotation.
+		_, mcpReq := f.Annotations["mcp_required"]
+
 		switch f.Value.Type() {
 		case "string":
-			opt := mcp.WithString(f.Name, mcp.Description(f.Usage))
-			opts = append(opts, opt)
+			if mcpReq {
+				opts = append(opts, mcp.WithString(f.Name, mcp.Required(), mcp.Description(f.Usage)))
+			} else {
+				opts = append(opts, mcp.WithString(f.Name, mcp.Description(f.Usage)))
+			}
 		case "int":
-			opts = append(opts, mcp.WithNumber(f.Name, mcp.Description(f.Usage)))
+			if mcpReq {
+				opts = append(opts, mcp.WithNumber(f.Name, mcp.Required(), mcp.Description(f.Usage)))
+			} else {
+				opts = append(opts, mcp.WithNumber(f.Name, mcp.Description(f.Usage)))
+			}
 		case "bool":
-			opts = append(opts, mcp.WithBoolean(f.Name, mcp.Description(f.Usage)))
+			if mcpReq {
+				opts = append(opts, mcp.WithBoolean(f.Name, mcp.Required(), mcp.Description(f.Usage)))
+			} else {
+				opts = append(opts, mcp.WithBoolean(f.Name, mcp.Description(f.Usage)))
+			}
 		}
 	})
 
