@@ -25,16 +25,6 @@ var newCmd = &cobra.Command{
 		svc := getServices(cmd)
 		due, _ := cmd.Flags().GetString("due")
 
-		var dueDate time.Time
-		var err error
-		if due != "" {
-			dueDate, err = time.Parse("2006-01-02", due)
-			if err != nil {
-				fmt.Println("Error parsing due date:", err)
-				return err
-			}
-			// fmt.Println("due: ", dueDate)
-		}
 
 		projectId := viper.GetInt("project")
 		if projectId == 0 {
@@ -99,11 +89,11 @@ var doneCmd = &cobra.Command{
 }
 
 var deleteCmd = &cobra.Command{
-	Use:   "delete",
-	Short: "Delete a task",
+	Use:         "delete",
+	Short:       "Delete a task",
 	Annotations: map[string]string{"skip_mcp": "true"},
-	Long:  `Delete a task permanently using the provided task ID.`,
-	Args:  cobra.ExactArgs(1),
+	Long:        `Delete a task permanently using the provided task ID.`,
+	Args:        cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		taskID, err := strconv.Atoi(args[0])
 		if err != nil {
@@ -365,3 +355,4 @@ func createTaskSimple(ctx context.Context, svc Services, title, dueStr string, p
 		return "", err
 	}
 	return fmt.Sprintf("Task created successfully: %d", created.ID), nil
+}

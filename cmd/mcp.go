@@ -121,10 +121,10 @@ func buildMCPServer() *server.MCPServer {
 }
 
 var mcpCmd = &cobra.Command{
-	Use:   "mcp",
-	Short: "Run Kunja as an MCP server over stdio",
+	Use:         "mcp",
+	Short:       "Run Kunja as an MCP server over stdio",
 	Annotations: map[string]string{"skip_mcp": "true"},
-	RunE:  runMCP,
+	RunE:        runMCP,
 }
 
 func init() {
@@ -230,8 +230,8 @@ func genericHandler(c *cobra.Command) func(ctx context.Context, req mcp.CallTool
 		execErr := c.Execute()
 
 		// Restore stdout
-		w.Close()  // closing writer lets the copier finish
-		<-done     // wait until everything is copied
+		w.Close() // closing writer lets the copier finish
+		<-done    // wait until everything is copied
 		os.Stdout = stdout
 
 		if execErr != nil {
