@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"kunja/api"
@@ -59,20 +60,12 @@ var newCmd = &cobra.Command{
 			projectId, _ = strconv.Atoi(strings.TrimSpace(parts[0]))
 		}
 
-		task := api.Task{
-			Title:     title,
-			DueDate:   dueDate,
-			ProjectID: projectId,
-		}
-
-		// verbose mode can be handled inside the service adapter later
-		createdTask, err := svc.Task.CreateTask(cmd.Context(), projectId, task)
+		msg, err := createTaskSimple(cmd.Context(), svc, title, due, projectId)
 		if err != nil {
 			fmt.Println("Error creating task:", err)
 			return err
 		}
-
-		fmt.Println("Task created successfully:", createdTask.ID)
+		fmt.Println(msg)
 		return nil
 	},
 }
@@ -344,3 +337,32 @@ var editCmd = &cobra.Command{
 		return nil
 	},
 }
+}
+
+// createTaskSimple contains the non-interactive business logic for creating a
+// task.  It is reused by both the CLI and the MCP “new” tool.
+func createTaskSimple(ctx context.Context, svc Services, title, dueStr string, projectID int) (string, error) {
+	if projectID == 0 {
+		return "", fmt.Errorf("project ID must be provided (flag --project)")
+	}
+
+	var dueDate time.Time
+	var err error
+	if dueStr != "" {
+		dueDate, err = time.Parse("2006-01-02", dueStr)
+		if err != nil {
+			return "", fmt.Errorf("invalid due date: %w", err)
+		}
+	}
+
+	task := api.Task{
+		Title:     title,
+		DueDate:   dueDate,
+		ProjectID: projectID,
+	}
+
+	created, err := svc.Task.CreateTask(ctx, projectID, task)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("Task created successfully: %d", created.ID), nil

@@ -85,6 +85,38 @@ func buildMCPServer() *server.MCPServer {
 	s.AddTool(listTool, listHandler)
 	BuiltinTools = append(BuiltinTools, listTool)
 
+	// ------------------------------------------------------------------
+	// Native MCP “new” tool (create task)
+	// ------------------------------------------------------------------
+	newTool := mcp.NewTool(
+		"new",
+		mcp.WithDescription("Create a new task in a project."),
+		mcp.WithString("title", mcp.Required(), mcp.Description("task title")),
+		mcp.WithString("due", mcp.Description("due date YYYY-MM-DD")),
+		mcp.WithNumber("project", mcp.Required(), mcp.Description("project ID")),
+	)
+	s.AddTool(newTool, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		argMap, _ := req.Params.Arguments.(map[string]interface{})
+		title, _ := argMap["title"].(string)
+		due, _ := argMap["due"].(string)
+		projFloat, ok := argMap["project"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("project argument is required")
+		}
+		projectID := int(projFloat)
+
+		ctx, svc, err := prepareServices(ctx)
+		if err != nil {
+			return nil, err
+		}
+		out, err := createTaskSimple(ctx, svc, title, due, projectID)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(out), nil
+	})
+	BuiltinTools = append(BuiltinTools, newTool)
+
 	return s
 }
 
