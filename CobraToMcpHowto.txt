@@ -35,8 +35,11 @@ shared logic.
 package pkg
 
 import (
+	"strings"
+
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 // CobraToMcp turns a *cobra.Command into an *mcp.Tool.
@@ -57,9 +60,16 @@ func CobraToMcp(cmd *cobra.Command) mcp.Tool {
 			opts = append(opts, mcp.WithBoolean(f.Name, mcp.Description(f.Usage)))
 		}
 	})
-	return mcp.NewTool(cmd.Use,
-		append([]mcp.ToolOption{mcp.WithDescription(cmd.Short)}, opts...)...,
-	).WithHandler(h)
+	// Prefer the long description when available – helps the LLM understand.
+	desc := strings.TrimSpace(cmd.Short)
+	if cmd.Long != "" {
+		desc = strings.TrimSpace(cmd.Long)
+	}
+
+	return mcp.NewTool(
+		cmd.Use,
+		append([]mcp.ToolOption{mcp.WithDescription(desc)}, opts...)...,
+	)
 }
 ```
 
