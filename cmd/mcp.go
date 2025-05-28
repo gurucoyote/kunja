@@ -63,12 +63,19 @@ func genericHandler(c *cobra.Command) func(ctx context.Context, req mcp.CallTool
 		// Build CLI args from parameters
 		var args []string
 		var keys []string
-		for k := range req.Params {
+
+		// MCP v0.30.0 stores all arguments in the Arguments map.
+		argMap := req.Params.Arguments
+		if argMap == nil {
+			argMap = map[string]interface{}{}
+		}
+
+		for k := range argMap {
 			keys = append(keys, k)
 		}
 		sort.Strings(keys)
 		for _, k := range keys {
-			v := req.Params[k]
+			v := argMap[k]
 			switch vv := v.(type) {
 			case bool:
 				if vv {
