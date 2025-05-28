@@ -236,6 +236,11 @@ func init() {
 
 	rootCmd.AddCommand(doneCmd)
 	rootCmd.AddCommand(deleteCmd)
+	// Flags for non-interactive updates in edit command
+	editCmd.Flags().StringP("title", "t", "", "New title for the task")
+	editCmd.Flags().String("description", "", "New description for the task")
+	editCmd.Flags().String("due", "", "New due date (YYYY-MM-DD)")
+
 	rootCmd.AddCommand(editCmd) // Add the edit command to the root command
 	rootCmd.AddCommand(assignedCmd)
 	rootCmd.AddCommand(usersCmd)
@@ -244,20 +249,50 @@ func init() {
 // editCmd represents the edit command
 var editCmd = &cobra.Command{
 	Use:   "edit",
-	Short: "Edit a task",
-	Annotations: map[string]string{"skip_mcp": "true"},
-	Long:  `Edit a task's title, description, or due date.`,
+	Short: "Edit a task (interactive or via flags)",
+	Long:  `Edit a task's title, description, or due date. Provide --title, --description, or --due for non-interactive updates; otherwise an interactive editor is opened.`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		taskID, _ := strconv.Atoi(args[0])
 		svc := getServices(cmd)
+
+		// --- flag based (non-interactive) path ---------------------------
+		newTitle, _ := cmd.Flags().GetString("title")
+		newDesc, _ := cmd.Flags().GetString("description")
+		newDue, _ := cmd.Flags().GetString("due")
+		scriptable := newTitle != "" || newDesc != "" || newDue != ""
+
+		// fetch current task (needed for both paths)
 		task, err := svc.Task.GetTask(cmd.Context(), taskID)
 		if err != nil {
 			fmt.Println("Error getting task:", err)
 			return err
 		}
 
-		// Define the options for editing
+		if scriptable {
+			if newTitle != "" {
+				task.Title = newTitle
+			}
+			if newDesc != "" {
+				task.Description = newDesc
+			}
+			if newDue != "" {
+				parsed, err := time.Parse("2006-01-02", newDue)
+				if err != nil {
+					return fmt.Errorf("invalid --due: %w", err)
+				}
+				task.DueDate = parsed
+			}
+			if _, err := svc.Task.UpdateTask(cmd.Context(), taskID, task); err != nil {
+				fmt.Println("Error updating task:", err)
+				return err
+			}
+			fmt.Println("Task updated successfully")
+			return nil
+		}
+		// ----------------------------------------------------------------
+
+		// Define the options for interactive editing
 		editOptions := []string{"Title", "Description", "Due Date", "Save"}
 		var fieldToEdit string
 
