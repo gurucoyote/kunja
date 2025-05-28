@@ -29,17 +29,14 @@ func buildMCPServer() *server.MCPServer {
 	// Register simple diagnostic tools that are not backed by Cobra.
 	registerBuiltinTools(s)
 
-	// Temporarily hide all Cobra-derived commands from the MCP server.
-	// (Re-enable by restoring the loop below.)
-	//
-	// cmds := rootCmd.Commands()
-	// sort.Slice(cmds, func(i, j int) bool { return cmds[i].Name() < cmds[j].Name() })
-	// for _, c := range cmds {
-	//     if c.Hidden || c.Annotations["skip_mcp"] == "true" || c.Name() == "help" || c.Name() == "completion" {
-	//         continue
-	//     }
-	//     s.AddTool(pkg.CobraToMcp(c), genericHandler(c))
-	// }
+	// Re-enable only the 'list' command (convert others later).
+	cmds := rootCmd.Commands()
+	for _, c := range cmds {
+		if c.Name() != "list" {
+			continue
+		}
+		s.AddTool(pkg.CobraToMcp(c), genericHandler(c))
+	}
 	return s
 }
 

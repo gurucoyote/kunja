@@ -92,28 +92,61 @@ var rootCmd = &cobra.Command{
 		}
 
 		// Sort tasks by urgency in descending order, then by ID in descending order
-		sort.Slice(tasks, func(i, j int) bool {
-			if tasks[i].Urgency == tasks[j].Urgency {
-				return tasks[i].ID > tasks[j].ID // Descending ID
-			}
-			return tasks[i].Urgency > tasks[j].Urgency // Descending urgency
-		})
-
-		// Output tasks
-		for _, task := range tasks {
-			fmt.Printf("%d:  %s (Urgency: %.3f)\n", task.ID, task.Title, task.Urgency)
-			if task.Description != "" {
-				fmt.Printf("Description: %s\n", task.Description)
-			}
-			if !task.DueDate.IsZero() {
-				fmt.Printf("Due Date: %s\n", task.DueDate.Format("2006-01-02"))
-			}
-			if !task.DoneAt.IsZero() {
-				fmt.Printf("Done At: %s\n", task.DoneAt.Format("2006-01-02 15:04:05"))
-			}
+		out, err := buildTaskList(cmd.Context(), svc, Verbose, ShowAll)
+		if err != nil {
+			return err
 		}
+		fmt.Print(out)
 		return nil
 	},
+}
+
+func buildTaskList(ctx context.Context, svc Services, verbose, showAll bool) (string, error) {
+	allTasks, err := svc.Task.GetAllTasks(ctx, api.GetAllTasksParams{})
+	if err != nil {
+		return "", err
+	}
+
+	// pretty-print and return raw JSON when verbose
+	if verbose {
+		if pretty, err := json.MarshalIndent(allTasks, "", "  "); err == nil {
+			return string(pretty) + "\n", nil
+		}
+	}
+
+	var tasks []api.Task
+	if !showAll {
+		for _, t := range allTasks {
+			if !t.Done {
+				tasks = append(tasks, t)
+			}
+		}
+	} else {
+		tasks = allTasks
+	}
+
+	// sort by urgency desc, then ID desc
+	sort.Slice(tasks, func(i, j int) bool {
+		if tasks[i].Urgency == tasks[j].Urgency {
+			return tasks[i].ID > tasks[j].ID
+		}
+		return tasks[i].Urgency > tasks[j].Urgency
+	})
+
+	var b strings.Builder
+	for _, task := range tasks {
+		fmt.Fprintf(&b, "%d:  %s (Urgency: %.3f)\n", task.ID, task.Title, task.Urgency)
+		if task.Description != "" {
+			fmt.Fprintf(&b, "Description: %s\n", task.Description)
+		}
+		if !task.DueDate.IsZero() {
+			fmt.Fprintf(&b, "Due Date: %s\n", task.DueDate.Format("2006-01-02"))
+		}
+		if !task.DoneAt.IsZero() {
+			fmt.Fprintf(&b, "Done At: %s\n", task.DoneAt.Format("2006-01-02 15:04:05"))
+		}
+	}
+	return b.String(), nil
 }
 
 func init() {
