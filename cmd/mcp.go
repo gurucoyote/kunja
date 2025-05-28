@@ -31,7 +31,7 @@ func buildMCPServer() *server.MCPServer {
 	sort.Slice(cmds, func(i, j int) bool { return cmds[i].Name() < cmds[j].Name() })
 
 	for _, c := range cmds {
-		if c.Hidden || c.Annotations["skip_mcp"] == "true" {
+		if c.Hidden || c.Annotations["skip_mcp"] == "true" || c.Name() == "help" || c.Name() == "completion" {
 			continue
 		}
 		s.AddTool(pkg.CobraToMcp(c), genericHandler(c))
@@ -59,7 +59,7 @@ func init() {
 		sort.Slice(cmds, func(i, j int) bool { return cmds[i].Name() < cmds[j].Name() })
 
 		for _, c := range cmds {
-			if c.Hidden || c.Annotations["skip_mcp"] == "true" {
+			if c.Hidden || c.Annotations["skip_mcp"] == "true" || c.Name() == "help" || c.Name() == "completion" {
 				continue
 			}
 			fmt.Fprintf(cmd.OutOrStdout(), "  %s  –  %s\n", c.Use, strings.TrimSpace(c.Short))
