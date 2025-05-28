@@ -52,8 +52,8 @@ func init() {
 
 	// Custom help prints a human-readable catalogue of all MCP tools.
 	mcpCmd.SetHelpFunc(func(cmd *cobra.Command, _ []string) {
-		fmt.Fprintln(cmd.OutOrStdout(), "Run Kunja as an MCP server over stdio.\n")
-		fmt.Fprintln(cmd.OutOrStdout(), "Available tools:\n")
+		fmt.Fprintln(cmd.OutOrStdout(), "Run Kunja as an MCP server over stdio.")
+		fmt.Fprintln(cmd.OutOrStdout(), "Available tools:")
 
 		cmds := rootCmd.Commands()
 		sort.Slice(cmds, func(i, j int) bool { return cmds[i].Name() < cmds[j].Name() })
