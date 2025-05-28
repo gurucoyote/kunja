@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"sort"
+	"encoding/json"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
@@ -17,6 +18,24 @@ import (
 )
 
 var mcpLog string
+
+// buildMCPServer creates an MCP server and registers every eligible Cobra
+// command exactly once.  The same builder is reused by the help output and the
+// runtime server, so tool metadata is generated in a single place.
+func buildMCPServer() *server.MCPServer {
+	s := server.NewMCPServer(AppName, Version)
+
+	cmds := rootCmd.Commands()
+	sort.Slice(cmds, func(i, j int) bool { return cmds[i].Name() < cmds[j].Name() })
+
+	for _, c := range cmds {
+		if c.Hidden || c.Annotations["skip_mcp"] == "true" {
+			continue
+		}
+		s.AddTool(pkg.CobraToMcp(c), genericHandler(c))
+	}
+	return s
+}
 
 var mcpCmd = &cobra.Command{
 	Use:   "mcp",
@@ -28,6 +47,16 @@ var mcpCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(mcpCmd)
 	mcpCmd.Flags().StringVarP(&mcpLog, "log", "l", "kunja-mcp.log", "debug log file")
+
+	// Custom help prints the JSON tool catalogue produced by the same builder.
+	mcpCmd.SetHelpFunc(func(cmd *cobra.Command, _ []string) {
+		s := buildMCPServer()
+		spec, _ := json.MarshalIndent(s.Spec(), "", "  ")
+		fmt.Fprintf(cmd.OutOrStdout(),
+			"Run Kunja as an MCP server over stdio.\n\nAvailable tools:\n%s\n",
+			spec,
+		)
+	})
 }
 
 // runMCP starts an MCP server that exposes all Cobra commands as tools.
@@ -39,20 +68,8 @@ func runMCP(_ *cobra.Command, _ []string) error {
 		log.SetOutput(io.MultiWriter(os.Stderr, f))
 	}
 
-	// Create the MCP server
-	s := server.NewMCPServer(AppName, Version)
-
-	// Register all non-hidden sub-commands of rootCmd.
-	cmds := rootCmd.Commands()
-	sort.Slice(cmds, func(i, j int) bool { return cmds[i].Name() < cmds[j].Name() })
-
-	for _, c := range cmds {
-		if c.Hidden || c.Annotations["skip_mcp"] == "true" {
-			continue
-		}
-		tool := pkg.CobraToMcp(c)
-		s.AddTool(tool, genericHandler(c))
-	}
+	// Build the MCP server and register all tools
+	s := buildMCPServer()
 
 	// Serve stdin/stdout
 	return server.ServeStdio(s)
