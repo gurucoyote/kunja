@@ -58,7 +58,7 @@ func runMCP(_ *cobra.Command, _ []string) error {
 }
 
 // genericHandler converts MCP parameters to CLI flags and executes the Cobra command.
-func genericHandler(c *cobra.Command) mcp.ToolHandler {
+func genericHandler(c *cobra.Command) func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		// Build CLI args from parameters
 		var args []string
