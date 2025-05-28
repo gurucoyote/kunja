@@ -28,6 +28,7 @@ var projectNewCmd = &cobra.Command{
 var projectDelCmd = &cobra.Command{
 	Use:   "project-del [ID]",
 	Short: "Delete a project",
+	Annotations: map[string]string{"skip_mcp": "true"},
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		id, _ := strconv.Atoi(args[0])

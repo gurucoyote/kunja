@@ -108,6 +108,7 @@ var doneCmd = &cobra.Command{
 var deleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "Delete a task",
+	Annotations: map[string]string{"skip_mcp": "true"},
 	Long:  `Delete a task permanently using the provided task ID.`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -244,6 +245,7 @@ func init() {
 var editCmd = &cobra.Command{
 	Use:   "edit",
 	Short: "Edit a task",
+	Annotations: map[string]string{"skip_mcp": "true"},
 	Long:  `Edit a task's title, description, or due date.`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
