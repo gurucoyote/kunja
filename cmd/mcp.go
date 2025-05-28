@@ -57,15 +57,19 @@ func init() {
 		fmt.Fprintln(cmd.OutOrStdout(), "Run Kunja as an MCP server over stdio.")
 		fmt.Fprintln(cmd.OutOrStdout(), "Available tools:")
 
-		// Build a temporary MCP server and list its tools so that the help
-		// output always reflects exactly what an MCP client will see.
-		s := buildMCPServer()
-		// Obtain the registered tools from the server.
-		tools := s.Tools()
-		sort.Slice(tools, func(i, j int) bool { return tools[i].Name < tools[j].Name })
-
-		for _, t := range tools {
+		// First show built-in diagnostic tools
+		for _, t := range BuiltinTools {
 			fmt.Fprintf(cmd.OutOrStdout(), "  %s  –  %s\n", t.Name, strings.TrimSpace(t.Description))
+		}
+
+		// Then show Cobra-based tools
+		cmds := rootCmd.Commands()
+		sort.Slice(cmds, func(i, j int) bool { return cmds[i].Name() < cmds[j].Name() })
+		for _, c := range cmds {
+			if c.Hidden || c.Annotations["skip_mcp"] == "true" || c.Name() == "help" || c.Name() == "completion" {
+				continue
+			}
+			fmt.Fprintf(cmd.OutOrStdout(), "  %s  –  %s\n", c.Use, strings.TrimSpace(c.Short))
 		}
 	})
 }
