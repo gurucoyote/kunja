@@ -52,7 +52,15 @@ func (client *ApiClient) request(ctx context.Context, method, apiPath string, bo
 		return nil, 0, err
 	}
 	// Record X-Total header (if present) for later diagnostics.
-	if totalStr := resp.Header.Get("X-Total"); totalStr != "" {
+	// Try several header names used by Vikunja for the total-items count.
+	totalStr := resp.Header.Get("X-Total")
+	if totalStr == "" {
+		totalStr = resp.Header.Get("Total")
+	}
+	if totalStr == "" {
+		totalStr = resp.Header.Get("X-Total-Count")
+	}
+	if totalStr != "" {
 		if total, err := strconv.Atoi(totalStr); err == nil {
 			setLastTotal(total)
 		}
