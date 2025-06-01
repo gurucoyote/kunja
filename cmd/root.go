@@ -88,7 +88,7 @@ var rootCmd = &cobra.Command{
 		}
 
 		// API already filtered when --all is not set.
-		tasks := allTasks
+		// tasks := allTasks
 
 		// Sort tasks by urgency in descending order, then by ID in descending order
 		out, err := buildTaskList(cmd.Context(), svc, Verbose, ShowAll)
