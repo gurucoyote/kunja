@@ -71,7 +71,14 @@ var rootCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		svc := getServices(cmd)
-		allTasks, err := svc.Task.GetAllTasks(cmd.Context(), api.GetAllTasksParams{})
+		// Ask the API to return only open tasks unless --all is set.
+		params := api.GetAllTasksParams{}
+		if !ShowAll {
+			params.FilterBy = "done"
+			params.FilterValue = "false"
+			params.FilterComparator = "eq"
+		}
+		allTasks, err := svc.Task.GetAllTasks(cmd.Context(), params)
 		if err != nil {
 			return err
 		}
@@ -80,16 +87,8 @@ var rootCmd = &cobra.Command{
 			fmt.Println(string(formattedTasks))
 		}
 
-		var tasks []api.Task
-		if !ShowAll {
-			for _, task := range allTasks {
-				if !task.Done {
-					tasks = append(tasks, task)
-				}
-			}
-		} else {
-			tasks = allTasks
-		}
+		// API already filtered when --all is not set.
+		tasks := allTasks
 
 		// Sort tasks by urgency in descending order, then by ID in descending order
 		out, err := buildTaskList(cmd.Context(), svc, Verbose, ShowAll)
@@ -102,7 +101,15 @@ var rootCmd = &cobra.Command{
 }
 
 func buildTaskList(ctx context.Context, svc Services, verbose, showAll bool) (string, error) {
-	allTasks, err := svc.Task.GetAllTasks(ctx, api.GetAllTasksParams{})
+	// When --all is not set, ask Vikunja to return only the open tasks.
+	params := api.GetAllTasksParams{}
+	if !showAll {
+		params.FilterBy = "done"
+		params.FilterValue = "false"
+		params.FilterComparator = "eq"
+	}
+
+	allTasks, err := svc.Task.GetAllTasks(ctx, params)
 	if err != nil {
 		return "", err
 	}
@@ -114,16 +121,8 @@ func buildTaskList(ctx context.Context, svc Services, verbose, showAll bool) (st
 		}
 	}
 
-	var tasks []api.Task
-	if !showAll {
-		for _, t := range allTasks {
-			if !t.Done {
-				tasks = append(tasks, t)
-			}
-		}
-	} else {
-		tasks = allTasks
-	}
+	// The API already returned the correct set (open or all).
+	tasks := allTasks
 
 	// sort by urgency desc, then ID desc
 	sort.Slice(tasks, func(i, j int) bool {
