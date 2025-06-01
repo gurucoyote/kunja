@@ -72,7 +72,7 @@ var rootCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		svc := getServices(cmd)
 		// Ask the API to return only open tasks unless --all is set.
-		params := api.GetAllTasksParams{}
+		params := api.GetAllTasksParams{PerPage: 100}
 		if !ShowAll {
 			params.FilterBy = "done"
 			params.FilterValue = "false"
@@ -102,7 +102,7 @@ var rootCmd = &cobra.Command{
 
 func buildTaskList(ctx context.Context, svc Services, verbose, showAll bool) (string, error) {
 	// When --all is not set, ask Vikunja to return only the open tasks.
-	params := api.GetAllTasksParams{}
+	params := api.GetAllTasksParams{PerPage: 100}
 	if !showAll {
 		params.FilterBy = "done"
 		params.FilterValue = "false"
