@@ -78,7 +78,7 @@ var rootCmd = &cobra.Command{
 			params.FilterValue = "false"
 			params.FilterComparator = "equals"
 		}
-		allTasks, err := svc.Task.GetAllTasks(cmd.Context(), params)
+		allTasks, err := fetchTasks(cmd.Context(), svc, params, 100)
 		if err != nil {
 			return err
 		}
@@ -100,6 +100,33 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+ // fetchTasks retrieves tasks across multiple pages until it has either
+ // collected `limit` tasks or there are no more pages.  Vikunja currently
+ // caps per_page at 50, so we request that maximum and loop.
+func fetchTasks(ctx context.Context, svc Services, base api.GetAllTasksParams, limit int) ([]api.Task, error) {
+	const perPage = 50
+	base.PerPage = perPage
+
+	var all []api.Task
+	page := 1
+	for {
+		base.Page = page
+		batch, err := svc.Task.GetAllTasks(ctx, base)
+		if err != nil {
+			return nil, err
+		}
+		all = append(all, batch...)
+		if len(batch) < perPage || (limit > 0 && len(all) >= limit) {
+			break
+		}
+		page++
+	}
+	if limit > 0 && len(all) > limit {
+		all = all[:limit]
+	}
+	return all, nil
+}
+
 func buildTaskList(ctx context.Context, svc Services, verbose, showAll bool) (string, error) {
 	// When --all is not set, ask Vikunja to return only the open tasks.
 	params := api.GetAllTasksParams{PerPage: 100}
@@ -109,7 +136,7 @@ func buildTaskList(ctx context.Context, svc Services, verbose, showAll bool) (st
 		params.FilterComparator = "equals"
 	}
 
-	allTasks, err := svc.Task.GetAllTasks(ctx, params)
+	allTasks, err := fetchTasks(ctx, svc, params, 100)
 	if err != nil {
 		return "", err
 	}
