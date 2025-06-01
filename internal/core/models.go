@@ -48,16 +48,16 @@ type Task struct {
 }
 
 type GetAllTasksParams struct {
-	Page               int    `json:"page,omitempty"`
-	PerPage            int    `json:"per_page,omitempty"`
-	S                  string `json:"s,omitempty"`
-	SortBy             string `json:"sort_by,omitempty"`
-	OrderBy            string `json:"order_by,omitempty"`
-	FilterBy           string `json:"filter_by,omitempty"`
-	FilterValue        string `json:"filter_value,omitempty"`
-	FilterComparator   string `json:"filter_comparator,omitempty"`
-	FilterConcat       string `json:"filter_concat,omitempty"`
-	FilterIncludeNulls string `json:"filter_include_nulls,omitempty"`
+	Page               int    `json:"page,omitempty"                url:"page,omitempty"`
+	PerPage            int    `json:"per_page,omitempty"            url:"per_page,omitempty"`
+	S                  string `json:"s,omitempty"                   url:"s,omitempty"`
+	SortBy             string `json:"sort_by,omitempty"             url:"sort_by,omitempty"`
+	OrderBy            string `json:"order_by,omitempty"            url:"order_by,omitempty"`
+	FilterBy           string `json:"filter_by,omitempty"           url:"filter_by,omitempty"`
+	FilterValue        string `json:"filter_value,omitempty"        url:"filter_value,omitempty"`
+	FilterComparator   string `json:"filter_comparator,omitempty"   url:"filter_comparator,omitempty"`
+	FilterConcat       string `json:"filter_concat,omitempty"       url:"filter_concat,omitempty"`
+	FilterIncludeNulls string `json:"filter_include_nulls,omitempty" url:"filter_include_nulls,omitempty"`
 }
 
 type Project struct {
