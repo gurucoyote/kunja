@@ -133,6 +133,8 @@ func buildTaskList(ctx context.Context, svc Services, verbose, showAll bool) (st
 	})
 
 	var b strings.Builder
+	// print result count: <shown>/<total>
+	fmt.Fprintf(&b, "%d/%d\n", len(tasks), api.GetLastTotal())
 	for _, task := range tasks {
 		fmt.Fprintf(&b, "%d:  %s (Urgency: %.3f)\n", task.ID, task.Title, task.Urgency)
 		if task.Description != "" {
