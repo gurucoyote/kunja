@@ -174,11 +174,12 @@ func buildMCPServer() *server.MCPServer {
 	// ------------------------------------------------------------------
 	editTool := mcp.NewTool(
 		"edit",
-		mcp.WithDescription("Edit a task (title, description and/or due date)."),
+		mcp.WithDescription("Edit a task (title, description, due date or project)."),
 		mcp.WithNumber("id", mcp.Required(), mcp.Description("task ID")),
 		mcp.WithString("title", mcp.Description("new title")),
 		mcp.WithString("description", mcp.Description("new description")),
 		mcp.WithString("due", mcp.Description("new due date YYYY-MM-DD")),
+		mcp.WithNumber("project", mcp.Description("new project ID")),
 	)
 	s.AddTool(editTool, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		args, _ := req.Params.Arguments.(map[string]interface{})
@@ -190,16 +191,17 @@ func buildMCPServer() *server.MCPServer {
 		title, _ := args["title"].(string)
 		desc, _ := args["description"].(string)
 		due, _ := args["due"].(string)
+		projFloat, _ := args["project"].(float64)
 
-		if title == "" && desc == "" && due == "" {
-			return nil, fmt.Errorf("provide at least one of title, description or due")
+		if title == "" && desc == "" && due == "" && projFloat == 0 {
+			return nil, fmt.Errorf("provide at least one of title, description, due or project")
 		}
 
 		ctx, svc, err := prepareServices(ctx)
 		if err != nil {
 			return nil, err
 		}
-		out, err := editTaskSimple(ctx, svc, int(idFloat), title, desc, due)
+		out, err := editTaskSimple(ctx, svc, int(idFloat), title, desc, due, int(projFloat))
 		if err != nil {
 			return nil, err
 		}

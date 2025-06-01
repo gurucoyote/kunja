@@ -202,6 +202,7 @@ func init() {
 	editCmd.Flags().StringP("title", "t", "", "New title for the task")
 	editCmd.Flags().String("description", "", "New description for the task")
 	editCmd.Flags().String("due", "", "New due date (YYYY-MM-DD)")
+	editCmd.Flags().IntP("project", "P", 0, "New project ID")
 
 	rootCmd.AddCommand(editCmd) // Add the edit command to the root command
 	rootCmd.AddCommand(assignedCmd)
@@ -222,7 +223,8 @@ var editCmd = &cobra.Command{
 		newTitle, _ := cmd.Flags().GetString("title")
 		newDesc, _ := cmd.Flags().GetString("description")
 		newDue, _ := cmd.Flags().GetString("due")
-		scriptable := newTitle != "" || newDesc != "" || newDue != ""
+		newProject, _ := cmd.Flags().GetInt("project")
+		scriptable := newTitle != "" || newDesc != "" || newDue != "" || newProject != 0
 
 		// fetch current task (needed for both paths)
 		task, err := svc.Task.GetTask(cmd.Context(), taskID)
@@ -232,7 +234,7 @@ var editCmd = &cobra.Command{
 		}
 
 		if scriptable {
-			msg, err := editTaskSimple(cmd.Context(), svc, taskID, newTitle, newDesc, newDue)
+			msg, err := editTaskSimple(cmd.Context(), svc, taskID, newTitle, newDesc, newDue, newProject)
 			if err != nil {
 				fmt.Println("Error updating task:", err)
 				return err
@@ -377,10 +379,10 @@ func toggleTaskDone(ctx context.Context, svc Services, taskID int) (string, erro
 // editTaskSimple – shared helper for non-interactive task updates
 // ---------------------------------------------------------------------
 func editTaskSimple(ctx context.Context, svc Services, taskID int,
-	title, desc, due string) (string, error) {
+	title, desc, due string, projectID int) (string, error) {
 
-	if title == "" && desc == "" && due == "" {
-		return "", fmt.Errorf("at least one of --title/--description/--due is required")
+	if title == "" && desc == "" && due == "" && projectID == 0 {
+		return "", fmt.Errorf("at least one of --title/--description/--due/--project is required")
 	}
 
 	task, err := svc.Task.GetTask(ctx, taskID)
@@ -400,6 +402,10 @@ func editTaskSimple(ctx context.Context, svc Services, taskID int,
 			return "", fmt.Errorf("invalid --due: %w", err)
 		}
 		task.DueDate = dt
+	}
+
+	if projectID != 0 {
+		task.ProjectID = projectID
 	}
 
 	if _, err := svc.Task.UpdateTask(ctx, taskID, task); err != nil {
