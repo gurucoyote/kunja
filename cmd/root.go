@@ -75,7 +75,7 @@ var rootCmd = &cobra.Command{
 		params := api.GetAllTasksParams{}
 		if !ShowAll {
 			params.FilterBy = "done"
-			params.FilterValue = "false"
+			params.FilterValue = "0"
 			params.FilterComparator = "eq"
 		}
 		allTasks, err := svc.Task.GetAllTasks(cmd.Context(), params)
@@ -105,7 +105,7 @@ func buildTaskList(ctx context.Context, svc Services, verbose, showAll bool) (st
 	params := api.GetAllTasksParams{}
 	if !showAll {
 		params.FilterBy = "done"
-		params.FilterValue = "false"
+		params.FilterValue = "0"
 		params.FilterComparator = "eq"
 	}
 
