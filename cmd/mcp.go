@@ -78,8 +78,8 @@ func buildMCPServer() *server.MCPServer {
 	// ------------------------------------------------------------------
 	listTool := mcp.NewTool(
 		"list",
-		mcp.WithDescription("List tasks sorted by urgency; set all=true to include completed tasks."),
-		mcp.WithBoolean("all", mcp.Description("include completed tasks")),
+		mcp.WithDescription("List tasks sorted by urgency. By default only open tasks are returned; set all=true if you also want to see completed (done) tasks."),
+		mcp.WithBoolean("all", mcp.Description("include done tasks – use only if you also want to see completed tasks")),
 		mcp.WithBoolean("verbose", mcp.Description("return raw JSON instead of table")),
 	)
 	s.AddTool(listTool, listHandler)
