@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
@@ -141,6 +142,18 @@ func buildMCPServer() *server.MCPServer {
 		return mcp.NewToolResultText(out), nil
 	})
 	BuiltinTools = append(BuiltinTools, projectsTool)
+
+	// ------------------------------------------------------------------
+	// Native MCP “now” tool (current date/time)
+	// ------------------------------------------------------------------
+	nowTool := mcp.NewTool(
+		"now",
+		mcp.WithDescription("Return the current date and time in RFC 3339 format. Call this tool any time you need to calculate a relative date or time such as 'tomorrow', 'in three days', etc."),
+	)
+	s.AddTool(nowTool, func(ctx context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		return mcp.NewToolResultText(time.Now().Format(time.RFC3339)), nil
+	})
+	BuiltinTools = append(BuiltinTools, nowTool)
 
 	// ------------------------------------------------------------------
 	// Native MCP “createproject” tool (create a new project)
