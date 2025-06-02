@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/mark3labs/mcp-go/mcp"
@@ -195,6 +196,64 @@ func buildMCPServer() *server.MCPServer {
 		return mcp.NewToolResultText(out), nil
 	})
 	BuiltinTools = append(BuiltinTools, doneTool)
+
+	// ------------------------------------------------------------------
+	// Native MCP “delete” tool (delete tasks)
+	// ------------------------------------------------------------------
+	deleteTool := mcp.NewTool(
+		"delete",
+		mcp.WithDescription("Delete one or more tasks by ID."),
+		mcp.WithString("ids", mcp.Required(), mcp.Description("comma-separated list of task IDs (e.g. \"12,34,56\")")),
+	)
+	s.AddTool(deleteTool, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		argMap, _ := req.Params.Arguments.(map[string]interface{})
+		idsRaw, _ := argMap["ids"].(string)
+		idsRaw = strings.TrimSpace(idsRaw)
+		if idsRaw == "" {
+			return nil, fmt.Errorf("ids argument is required")
+		}
+
+		var ids []int
+		for _, part := range strings.Split(idsRaw, ",") {
+			part = strings.TrimSpace(part)
+			if part == "" {
+				continue
+			}
+			id, err := strconv.Atoi(part)
+			if err != nil {
+				return nil, fmt.Errorf("invalid task ID: %q", part)
+			}
+			ids = append(ids, id)
+		}
+		if len(ids) == 0 {
+			return nil, fmt.Errorf("no valid task IDs supplied")
+		}
+
+		ctx, svc, err := prepareServices(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		var deleted []string
+		var failed []string
+		for _, id := range ids {
+			if _, err := svc.Task.DeleteTask(ctx, id); err != nil {
+				failed = append(failed, fmt.Sprintf("%d (%v)", id, err))
+			} else {
+				deleted = append(deleted, strconv.Itoa(id))
+			}
+		}
+
+		var b strings.Builder
+		if len(deleted) > 0 {
+			fmt.Fprintf(&b, "Deleted: %s\n", strings.Join(deleted, ", "))
+		}
+		if len(failed) > 0 {
+			fmt.Fprintf(&b, "Failed:  %s\n", strings.Join(failed, ", "))
+		}
+		return mcp.NewToolResultText(b.String()), nil
+	})
+	BuiltinTools = append(BuiltinTools, deleteTool)
 
 	// ------------------------------------------------------------------
 	// Native MCP “edit” tool (update task fields)
