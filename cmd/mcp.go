@@ -156,6 +156,80 @@ func buildMCPServer() *server.MCPServer {
 	BuiltinTools = append(BuiltinTools, nowTool)
 
 	// ------------------------------------------------------------------
+	// Native MCP “timecalc” tool (strict RFC-3339 date/time arithmetic)
+	// ------------------------------------------------------------------
+	timecalcTool := mcp.NewTool(
+		"timecalc",
+		mcp.WithDescription(
+			"Perform date/time calculations. " +
+				"op=add|sub requires ts (RFC 3339 with timezone, e.g. 2024-07-08T10:00:00Z) and dur (Go duration, e.g. 2h30m). " +
+				"op=diff requires ts and ts2 (both RFC 3339) and returns the difference in seconds. " +
+				"op=convert requires ts and toTZ (IANA zone name). " +
+				"Call this tool any time you need to calculate a relative date or time such as 'tomorrow', 'in three days', etc.",
+		),
+		mcp.WithString("op", mcp.Required(), mcp.Description("add, sub, diff or convert")),
+		mcp.WithString("ts", mcp.Required(), mcp.Description("base timestamp (RFC 3339 with timezone)")),
+		mcp.WithString("dur", mcp.Description("duration for add/sub (e.g. 2h30m)")),
+		mcp.WithString("ts2", mcp.Description("second timestamp for diff (RFC 3339 with timezone)")),
+		mcp.WithString("toTZ", mcp.Description("IANA time-zone for convert (e.g. Europe/Berlin)")),
+	)
+	s.AddTool(timecalcTool, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		args, _ := req.Params.Arguments.(map[string]interface{})
+		op := strings.ToLower(fmt.Sprint(args["op"]))
+		tsStr := fmt.Sprint(args["ts"])
+		if tsStr == "" {
+			return nil, fmt.Errorf("ts is required and must be RFC 3339 with timezone")
+		}
+		base, err := time.Parse(time.RFC3339, tsStr)
+		if err != nil {
+			return nil, fmt.Errorf("invalid ts (must be RFC 3339 with timezone): %w", err)
+		}
+
+		switch op {
+		case "add", "sub":
+			durStr := fmt.Sprint(args["dur"])
+			if durStr == "" {
+				return nil, fmt.Errorf("dur is required for %s", op)
+			}
+			d, err := time.ParseDuration(durStr)
+			if err != nil {
+				return nil, fmt.Errorf("invalid dur: %w", err)
+			}
+			if op == "sub" {
+				d = -d
+			}
+			return mcp.NewToolResultText(base.Add(d).Format(time.RFC3339)), nil
+
+		case "diff":
+			ts2Str := fmt.Sprint(args["ts2"])
+			if ts2Str == "" {
+				return nil, fmt.Errorf("ts2 is required for diff")
+			}
+			ts2, err := time.Parse(time.RFC3339, ts2Str)
+			if err != nil {
+				return nil, fmt.Errorf("invalid ts2 (must be RFC 3339 with timezone): %w", err)
+			}
+			sec := int(ts2.Sub(base).Seconds())
+			return mcp.NewToolResultText(fmt.Sprintf("%d", sec)), nil
+
+		case "convert":
+			tzName := fmt.Sprint(args["toTZ"])
+			if tzName == "" {
+				return nil, fmt.Errorf("toTZ is required for convert")
+			}
+			loc, err := time.LoadLocation(tzName)
+			if err != nil {
+				return nil, fmt.Errorf("unknown time-zone: %s", tzName)
+			}
+			return mcp.NewToolResultText(base.In(loc).Format(time.RFC3339)), nil
+
+		default:
+			return nil, fmt.Errorf("unknown op: %s (must be add, sub, diff or convert)", op)
+		}
+	})
+	BuiltinTools = append(BuiltinTools, timecalcTool)
+
+	// ------------------------------------------------------------------
 	// Native MCP “createproject” tool (create a new project)
 	// ------------------------------------------------------------------
 	createProjectTool := mcp.NewTool(
