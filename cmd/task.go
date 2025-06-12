@@ -87,9 +87,12 @@ var doneCmd = &cobra.Command{
 				fmt.Println("Error retrieving tasks:", err)
 				return err
 			}
-			// Show newest tasks first (highest ID first)
+			// Sort by urgency desc, then ID desc (same logic as list command)
 			sort.Slice(openTasks, func(i, j int) bool {
-				return openTasks[i].ID > openTasks[j].ID
+				if openTasks[i].Urgency == openTasks[j].Urgency {
+					return openTasks[i].ID > openTasks[j].ID
+				}
+				return openTasks[i].Urgency > openTasks[j].Urgency
 			})
 			if len(openTasks) == 0 {
 				fmt.Println("No open tasks found.")
