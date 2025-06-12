@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"kunja/api"
 	"strconv"
 	"strings"
@@ -86,6 +87,10 @@ var doneCmd = &cobra.Command{
 				fmt.Println("Error retrieving tasks:", err)
 				return err
 			}
+			// Show newest tasks first (highest ID first)
+			sort.Slice(openTasks, func(i, j int) bool {
+				return openTasks[i].ID > openTasks[j].ID
+			})
 			if len(openTasks) == 0 {
 				fmt.Println("No open tasks found.")
 				return nil
