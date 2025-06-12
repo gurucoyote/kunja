@@ -61,19 +61,89 @@ var newCmd = &cobra.Command{
 }
 
 var doneCmd = &cobra.Command{
-	Use:   "done",
-	Short: "Toggle the done status of a task (arg TASK_ID)",
-	Long:  `Mark a task as done using the provided task ID.`,
-	Args:  cobra.ExactArgs(1),
+	Use:   "done [TASK_ID...]",
+	Short: "Toggle the done status of one or more tasks",
+	Long:  `Toggle the done status of the specified task IDs. If no IDs are provided an interactive multi-select is shown.`,
+	Args:  cobra.ArbitraryArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		taskID, _ := strconv.Atoi(args[0])
 		svc := getServices(cmd)
-		msg, err := toggleTaskDone(cmd.Context(), svc, taskID)
-		if err != nil {
-			fmt.Println("Error updating task:", err)
-			return err
+		ctx := cmd.Context()
+
+		// ---------------------------------------------------------------
+		// Build list of task IDs – either from CLI args or survey prompt
+		// ---------------------------------------------------------------
+		var ids []int
+		if len(args) == 0 {
+			// Interactive path: fetch open tasks and present a multi-select
+			params := api.GetAllTasksParams{
+				PerPage:          100,
+				FilterBy:         "done",
+				FilterValue:      "false",
+				FilterComparator: "equals",
+			}
+			openTasks, err := fetchTasks(ctx, svc, params, 100)
+			if err != nil {
+				fmt.Println("Error retrieving tasks:", err)
+				return err
+			}
+			if len(openTasks) == 0 {
+				fmt.Println("No open tasks found.")
+				return nil
+			}
+
+			var options []string
+			for _, t := range openTasks {
+				options = append(options, fmt.Sprintf("%d: %s", t.ID, t.Title))
+			}
+			var selected []string
+			prompt := &survey.MultiSelect{
+				Message: "Select tasks to toggle done:",
+				Options: options,
+			}
+			if err := survey.AskOne(prompt, &selected); err != nil {
+				fmt.Println("Task selection cancelled")
+				return fmt.Errorf("task selection cancelled")
+			}
+			for _, sel := range selected {
+				parts := strings.SplitN(sel, ":", 2)
+				id, _ := strconv.Atoi(strings.TrimSpace(parts[0]))
+				ids = append(ids, id)
+			}
+		} else {
+			// Non-interactive path: parse positional arguments
+			for _, a := range args {
+				id, err := strconv.Atoi(a)
+				if err != nil {
+					return fmt.Errorf("invalid task ID: %q", a)
+				}
+				ids = append(ids, id)
+			}
 		}
-		fmt.Println(msg)
+
+		if len(ids) == 0 {
+			return fmt.Errorf("no task IDs supplied")
+		}
+
+		// ---------------------------------------------------------------
+		// Toggle done for each ID and collect results
+		// ---------------------------------------------------------------
+		var toggled []string
+		var failed []string
+		for _, id := range ids {
+			msg, err := toggleTaskDone(ctx, svc, id)
+			if err != nil {
+				failed = append(failed, fmt.Sprintf("%d (%v)", id, err))
+			} else {
+				toggled = append(toggled, fmt.Sprintf("%d (%s)", id, msg))
+			}
+		}
+
+		if len(toggled) > 0 {
+			fmt.Printf("Toggled: %s\n", strings.Join(toggled, ", "))
+		}
+		if len(failed) > 0 {
+			fmt.Printf("Failed:  %s\n", strings.Join(failed, ", "))
+		}
 		return nil
 	},
 }
