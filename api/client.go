@@ -102,21 +102,6 @@ func (client *ApiClient) getCtx(ctx context.Context, apiPath string) (string, er
 			return client.getCtx(ctx, apiPath)
 		}
 	}
-	if status == http.StatusUnauthorized {
-		if err := client.refreshToken(ctx); err == nil {
-			return client.putCtx(ctx, apiPath, payload)
-		}
-	}
-	if status == http.StatusUnauthorized {
-		if err := client.refreshToken(ctx); err == nil {
-			return client.deleteCtx(ctx, apiPath)
-		}
-	}
-	if status == http.StatusUnauthorized {
-		if err := client.refreshToken(ctx); err == nil {
-			return client.postCtx(ctx, apiPath, payload)
-		}
-	}
 	if status < 200 || status >= 300 {
 		return "", errorFromBody(status, respBody)
 	}
