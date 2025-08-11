@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -157,75 +158,194 @@ func buildMCPServer() *server.MCPServer {
 	BuiltinTools = append(BuiltinTools, nowTool)
 
 	// ------------------------------------------------------------------
-	// Native MCP “timecalc” tool (strict RFC-3339 date/time arithmetic)
+	// Native MCP time tools – simpler, forgiving parameters
 	// ------------------------------------------------------------------
+
+	// time.add
+	addTool := mcp.NewTool(
+		"time.add",
+		mcp.WithDescription("Add a duration to a timestamp. Defaults to now."),
+		mcp.WithString("ts", mcp.Description("RFC3339, YYYY-MM-DD, 'now', or unix seconds/ms")),
+		mcp.WithNumber("seconds"),
+		mcp.WithNumber("minutes"),
+		mcp.WithNumber("hours"),
+		mcp.WithNumber("days"),
+		mcp.WithString("dur", mcp.Description("Go duration (e.g. 2h30m), ISO-8601 (e.g. P1DT30M) or human (e.g. '2 hours')")),
+	)
+	s.AddTool(addTool, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		args, _ := req.Params.Arguments.(map[string]interface{})
+		base, err := parseTS(pickArg(args, "ts"))
+		if err != nil {
+			return nil, err
+		}
+		d, err := parseDur(args)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(base.Add(d).Format(time.RFC3339)), nil
+	})
+	BuiltinTools = append(BuiltinTools, addTool)
+
+	// time.sub
+	subTool := mcp.NewTool(
+		"time.sub",
+		mcp.WithDescription("Subtract a duration from a timestamp. Defaults to now."),
+		mcp.WithString("ts", mcp.Description("RFC3339, YYYY-MM-DD, 'now', or unix seconds/ms")),
+		mcp.WithNumber("seconds"),
+		mcp.WithNumber("minutes"),
+		mcp.WithNumber("hours"),
+		mcp.WithNumber("days"),
+		mcp.WithString("dur", mcp.Description("Go duration (e.g. 2h30m), ISO-8601 (e.g. P1DT30M) or human (e.g. '2 hours')")),
+	)
+	s.AddTool(subTool, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		args, _ := req.Params.Arguments.(map[string]interface{})
+		base, err := parseTS(pickArg(args, "ts"))
+		if err != nil {
+			return nil, err
+		}
+		d, err := parseDur(args)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(base.Add(-d).Format(time.RFC3339)), nil
+	})
+	BuiltinTools = append(BuiltinTools, subTool)
+
+	// time.diff
+	diffTool := mcp.NewTool(
+		"time.diff",
+		mcp.WithDescription("Difference between two timestamps. Returns a number (default seconds)."),
+		mcp.WithString("ts", mcp.Required(), mcp.Description("RFC3339, YYYY-MM-DD, 'now', or unix seconds/ms")),
+		mcp.WithString("ts2", mcp.Required(), mcp.Description("RFC3339, YYYY-MM-DD, or unix epoch")),
+		mcp.WithString("unit", mcp.Description("seconds|minutes|hours|days (default: seconds)")),
+	)
+	s.AddTool(diffTool, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		args, _ := req.Params.Arguments.(map[string]interface{})
+		t1, err := parseTS(pickArg(args, "ts"))
+		if err != nil {
+			return nil, err
+		}
+		t2, err := parseTS(pickArg(args, "ts2"))
+		if err != nil {
+			return nil, err
+		}
+		u := strings.ToLower(pickArg(args, "unit", "units"))
+		delta := t2.Sub(t1).Seconds()
+		switch u {
+		case "minutes", "minute", "min", "mins", "m":
+			delta /= 60
+		case "hours", "hour", "hr", "hrs", "h":
+			delta /= 3600
+		case "days", "day", "d":
+			delta /= 86400
+		}
+		return mcp.NewToolResultText(fmt.Sprintf("%.0f", delta)), nil
+	})
+	BuiltinTools = append(BuiltinTools, diffTool)
+
+	// time.convert
+	convertTool := mcp.NewTool(
+		"time.convert",
+		mcp.WithDescription("Convert a timestamp to another time-zone."),
+		mcp.WithString("ts", mcp.Required(), mcp.Description("RFC3339, YYYY-MM-DD, or unix epoch")),
+		mcp.WithString("toTZ", mcp.Required(), mcp.Description("IANA time-zone, e.g. Europe/Berlin")),
+		mcp.WithString("fromTZ", mcp.Description("interpret naive ts in this zone (if needed)")),
+	)
+	s.AddTool(convertTool, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		args, _ := req.Params.Arguments.(map[string]interface{})
+		tsStr := pickArg(args, "ts")
+		to := pickArg(args, "toTZ", "to_tz", "tz", "timezone")
+		from := pickArg(args, "fromTZ", "from_tz", "from")
+		t, err := parseTSWithFrom(tsStr, from)
+		if err != nil {
+			return nil, err
+		}
+		loc, err := time.LoadLocation(to)
+		if err != nil {
+			return nil, fmt.Errorf("unknown time-zone: %s", to)
+		}
+		return mcp.NewToolResultText(t.In(loc).Format(time.RFC3339)), nil
+	})
+	BuiltinTools = append(BuiltinTools, convertTool)
+
+	// Compatibility wrapper: timecalc
 	timecalcTool := mcp.NewTool(
 		"timecalc",
-		mcp.WithDescription(
-			"Perform date/time calculations. " +
-				"op=add|sub requires ts (RFC 3339 with timezone, e.g. 2024-07-08T10:00:00Z) and dur (Go duration, e.g. 2h30m). " +
-				"op=diff requires ts and ts2 (both RFC 3339) and returns the difference in seconds. " +
-				"op=convert requires ts and toTZ (IANA zone name). " +
-				"Call this tool any time you need to calculate a relative date or time such as 'tomorrow', 'in three days', etc.",
-		),
-		mcp.WithString("op", mcp.Required(), mcp.Description("add, sub, diff or convert")),
-		mcp.WithString("ts", mcp.Required(), mcp.Description("base timestamp (RFC 3339 with timezone)")),
-		mcp.WithString("dur", mcp.Description("duration for add/sub (e.g. 2h30m)")),
-		mcp.WithString("ts2", mcp.Description("second timestamp for diff (RFC 3339 with timezone)")),
-		mcp.WithString("toTZ", mcp.Description("IANA time-zone for convert (e.g. Europe/Berlin)")),
+		mcp.WithDescription("Compatibility wrapper for time calculations (prefer time.add, time.sub, time.diff, time.convert)."),
+		mcp.WithString("op", mcp.Required(), mcp.Description("add|plus|+ / sub|minus|- / diff|delta / convert|tz")),
+		mcp.WithString("ts", mcp.Description("base timestamp; defaults to 'now' for add/sub")),
+		mcp.WithString("dur", mcp.Description("duration for add/sub")),
+		mcp.WithString("ts2", mcp.Description("second timestamp for diff")),
+		mcp.WithString("toTZ", mcp.Description("target time-zone for convert")),
+		mcp.WithString("fromTZ", mcp.Description("interpret naive ts in this zone")),
+		mcp.WithNumber("seconds"),
+		mcp.WithNumber("minutes"),
+		mcp.WithNumber("hours"),
+		mcp.WithNumber("days"),
 	)
 	s.AddTool(timecalcTool, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		args, _ := req.Params.Arguments.(map[string]interface{})
-		op := strings.ToLower(fmt.Sprint(args["op"]))
-		tsStr := fmt.Sprint(args["ts"])
-		if tsStr == "" {
-			return nil, fmt.Errorf("ts is required and must be RFC 3339 with timezone")
-		}
-		base, err := time.Parse(time.RFC3339, tsStr)
-		if err != nil {
-			return nil, fmt.Errorf("invalid ts (must be RFC 3339 with timezone): %w", err)
-		}
-
+		op := strings.ToLower(pickArg(args, "op"))
 		switch op {
-		case "add", "sub":
-			durStr := fmt.Sprint(args["dur"])
-			if durStr == "" {
-				return nil, fmt.Errorf("dur is required for %s", op)
-			}
-			d, err := time.ParseDuration(durStr)
+		case "add", "plus", "+":
+			base, err := parseTS(pickArg(args, "ts"))
 			if err != nil {
-				return nil, fmt.Errorf("invalid dur: %w", err)
+				return nil, err
 			}
-			if op == "sub" {
-				d = -d
+			d, err := parseDur(args)
+			if err != nil {
+				return nil, err
 			}
 			return mcp.NewToolResultText(base.Add(d).Format(time.RFC3339)), nil
 
-		case "diff":
-			ts2Str := fmt.Sprint(args["ts2"])
-			if ts2Str == "" {
-				return nil, fmt.Errorf("ts2 is required for diff")
-			}
-			ts2, err := time.Parse(time.RFC3339, ts2Str)
+		case "sub", "minus", "-":
+			base, err := parseTS(pickArg(args, "ts"))
 			if err != nil {
-				return nil, fmt.Errorf("invalid ts2 (must be RFC 3339 with timezone): %w", err)
+				return nil, err
 			}
-			sec := int(ts2.Sub(base).Seconds())
-			return mcp.NewToolResultText(fmt.Sprintf("%d", sec)), nil
+			d, err := parseDur(args)
+			if err != nil {
+				return nil, err
+			}
+			return mcp.NewToolResultText(base.Add(-d).Format(time.RFC3339)), nil
 
-		case "convert":
-			tzName := fmt.Sprint(args["toTZ"])
-			if tzName == "" {
-				return nil, fmt.Errorf("toTZ is required for convert")
-			}
-			loc, err := time.LoadLocation(tzName)
+		case "diff", "delta":
+			t1, err := parseTS(pickArg(args, "ts"))
 			if err != nil {
-				return nil, fmt.Errorf("unknown time-zone: %s", tzName)
+				return nil, err
 			}
-			return mcp.NewToolResultText(base.In(loc).Format(time.RFC3339)), nil
+			t2, err := parseTS(pickArg(args, "ts2"))
+			if err != nil {
+				return nil, err
+			}
+			u := strings.ToLower(pickArg(args, "unit", "units"))
+			delta := t2.Sub(t1).Seconds()
+			switch u {
+			case "minutes", "minute", "min", "mins", "m":
+				delta /= 60
+			case "hours", "hour", "hr", "hrs", "h":
+				delta /= 3600
+			case "days", "day", "d":
+				delta /= 86400
+			}
+			return mcp.NewToolResultText(fmt.Sprintf("%.0f", delta)), nil
+
+		case "convert", "tz":
+			tsStr := pickArg(args, "ts")
+			to := pickArg(args, "toTZ", "to_tz", "tz", "timezone")
+			from := pickArg(args, "fromTZ", "from_tz", "from")
+			t, err := parseTSWithFrom(tsStr, from)
+			if err != nil {
+				return nil, err
+			}
+			loc, err := time.LoadLocation(to)
+			if err != nil {
+				return nil, fmt.Errorf("unknown time-zone: %s", to)
+			}
+			return mcp.NewToolResultText(t.In(loc).Format(time.RFC3339)), nil
 
 		default:
-			return nil, fmt.Errorf("unknown op: %s (must be add, sub, diff or convert)", op)
+			return nil, fmt.Errorf("unknown op: %s (use add/sub/diff/convert)", op)
 		}
 	})
 	BuiltinTools = append(BuiltinTools, timecalcTool)
@@ -515,4 +635,165 @@ func genericHandler(c *cobra.Command) func(ctx context.Context, req mcp.CallTool
 
 		return result, nil
 	}
+}
+
+// ---------------------------------------------------------------------
+// Helper functions for time tools – forgiving parsing
+// ---------------------------------------------------------------------
+
+func pickArg(m map[string]interface{}, names ...string) string {
+	for _, n := range names {
+		if v, ok := m[n]; ok {
+			return fmt.Sprint(v)
+		}
+	}
+	return ""
+}
+
+func strArg(m map[string]interface{}, name string) string {
+	return fmt.Sprint(m[name])
+}
+
+func numArg(m map[string]interface{}, name string) float64 {
+	if v, ok := m[name]; ok {
+		switch t := v.(type) {
+		case float64:
+			return t
+		case string:
+			if f, err := strconv.ParseFloat(t, 64); err == nil {
+				return f
+			}
+		}
+	}
+	return 0
+}
+
+func parseTS(input string) (time.Time, error) { return parseTSWithFrom(input, "") }
+
+func parseTSWithFrom(input, fromTZ string) (time.Time, error) {
+	s := strings.TrimSpace(strings.ToLower(input))
+	if s == "" || s == "now" {
+		return time.Now(), nil
+	}
+
+	// Unix epoch (seconds or milliseconds)
+	if reNum := regexp.MustCompile(`^\d+$`); reNum.MatchString(s) {
+		if len(s) >= 13 {
+			ms, _ := strconv.ParseInt(s, 10, 64)
+			return time.Unix(0, ms*int64(time.Millisecond)), nil
+		}
+		sec, _ := strconv.ParseInt(s, 10, 64)
+		return time.Unix(sec, 0), nil
+	}
+
+	// RFC 3339 with timezone
+	if t, err := time.Parse(time.RFC3339, input); err == nil {
+		return t, nil
+	}
+
+	// RFC3339-like without zone -> interpret in fromTZ or local
+	if strings.Contains(input, "T") && !strings.ContainsAny(input, "zZ+-") {
+		loc := time.Local
+		if fromTZ != "" {
+			if l, err := time.LoadLocation(fromTZ); err == nil {
+				loc = l
+			}
+		}
+		if t, err := time.ParseInLocation("2006-01-02T15:04:05", input, loc); err == nil {
+			return t, nil
+		}
+	}
+
+	// Date-only
+	if !strings.Contains(input, "T") {
+		loc := time.Local
+		if fromTZ != "" {
+			if l, err := time.LoadLocation(fromTZ); err == nil {
+				loc = l
+			}
+		}
+		if d, err := time.ParseInLocation("2006-01-02", input, loc); err == nil {
+			return d, nil
+		}
+	}
+
+	return time.Time{}, fmt.Errorf("invalid ts: %q (RFC3339, YYYY-MM-DD, 'now' or unix epoch)", input)
+}
+
+func parseDur(args map[string]interface{}) (time.Duration, error) {
+	// Structured fields first
+	total := time.Duration(0)
+	total += time.Duration(numArg(args, "seconds")) * time.Second
+	total += time.Duration(numArg(args, "minutes")) * time.Minute
+	total += time.Duration(numArg(args, "hours")) * time.Hour
+	total += time.Duration(numArg(args, "days")) * 24 * time.Hour
+	if total > 0 {
+		return total, nil
+	}
+
+	// String-based: Go duration, ISO-8601, or simple human phrases
+	s := pickArg(args, "dur", "duration", "delta")
+	if strings.TrimSpace(s) == "" {
+		return 0, fmt.Errorf("no duration provided")
+	}
+	if d, err := time.ParseDuration(s); err == nil {
+		return d, nil
+	}
+	if d, err := parseISODur(s); err == nil {
+		return d, nil
+	}
+	if d, err := parseHumanDur(s); err == nil {
+		return d, nil
+	}
+	return 0, fmt.Errorf("invalid duration: %q", s)
+}
+
+// Support a small ISO-8601 subset: PnDTnHnMnS (any part optional)
+func parseISODur(s string) (time.Duration, error) {
+	re := regexp.MustCompile(`(?i)^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$`)
+	m := re.FindStringSubmatch(strings.TrimSpace(s))
+	if m == nil {
+		return 0, fmt.Errorf("not ISO-8601 duration")
+	}
+	val := func(i int) int64 {
+		if i >= len(m) || m[i] == "" {
+			return 0
+		}
+		v, _ := strconv.ParseInt(m[i], 10, 64)
+		return v
+	}
+	d := time.Duration(0)
+	d += time.Duration(val(1)) * 24 * time.Hour
+	d += time.Duration(val(2)) * time.Hour
+	d += time.Duration(val(3)) * time.Minute
+	d += time.Duration(val(4)) * time.Second
+	return d, nil
+}
+
+// Parse human phrases like "2 hours", "1 day 30 min", "90min"
+func parseHumanDur(s string) (time.Duration, error) {
+	re := regexp.MustCompile(`(?i)(\d+(?:\.\d+)?)\s*(days?|d|hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)`)
+	var sec float64
+	for _, m := range re.FindAllStringSubmatch(s, -1) {
+		numStr := m[1]
+		unit := strings.ToLower(m[2])
+		v, err := strconv.ParseFloat(numStr, 64)
+		if err != nil {
+			continue
+		}
+		switch unit {
+		case "day", "days", "d":
+			sec += v * 86400
+		case "hour", "hours", "hr", "hrs", "h":
+			sec += v * 3600
+		case "minute", "minutes", "min", "mins", "m":
+			sec += v * 60
+		case "second", "seconds", "sec", "secs", "s":
+			sec += v
+		}
+	}
+	if sec == 0 {
+		return 0, fmt.Errorf("not human duration")
+	}
+	return time.Duration(sec * float64(time.Second)), nil
 }
