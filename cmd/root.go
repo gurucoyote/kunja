@@ -57,6 +57,7 @@ var rootCmd = &cobra.Command{
 		}
 
 		client := api.NewApiClient(viper.GetString("baseUrl"), token)
+		client.SetCredentials(viper.GetString("username"), viper.GetString("password"))
 		adapter := vikunja.New(client)
 
 		services := Services{

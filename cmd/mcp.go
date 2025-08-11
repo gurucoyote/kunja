@@ -36,6 +36,7 @@ func prepareServices(ctx context.Context) (context.Context, Services, error) {
 	}
 
 	client := api.NewApiClient(base, token)
+	client.SetCredentials(viper.GetString("username"), viper.GetString("password"))
 	adapter := vikunja.New(client)
 
 	svc := Services{

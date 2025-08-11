@@ -16,6 +16,8 @@ type ApiClient struct {
 	HttpClient *http.Client
 	Token      string
 	ApiBaseUrl string
+	Username   string
+	Password   string
 	Verbose    bool
 }
 
@@ -93,6 +95,27 @@ func (client *ApiClient) getCtx(ctx context.Context, apiPath string) (string, er
 	respBody, status, err := client.request(ctx, http.MethodGet, apiPath, nil)
 	if err != nil {
 		return "", err
+	}
+	if status == http.StatusUnauthorized {
+		// try to transparently refresh the token once
+		if err := client.refreshToken(ctx); err == nil {
+			return client.getCtx(ctx, apiPath)
+		}
+	}
+	if status == http.StatusUnauthorized {
+		if err := client.refreshToken(ctx); err == nil {
+			return client.putCtx(ctx, apiPath, payload)
+		}
+	}
+	if status == http.StatusUnauthorized {
+		if err := client.refreshToken(ctx); err == nil {
+			return client.deleteCtx(ctx, apiPath)
+		}
+	}
+	if status == http.StatusUnauthorized {
+		if err := client.refreshToken(ctx); err == nil {
+			return client.postCtx(ctx, apiPath, payload)
+		}
 	}
 	if status < 200 || status >= 300 {
 		return "", errorFromBody(status, respBody)
@@ -271,4 +294,23 @@ func (client *ApiClient) GetProject(ctx context.Context, projectID int) (Project
 	}
 
 	return project, nil
+}
+
+// ---------------------------------------------------------------------
+// Credential helper & token refresh
+// ---------------------------------------------------------------------
+
+// SetCredentials stores fallback username/password for automatic re-login.
+func (client *ApiClient) SetCredentials(username, password string) {
+	client.Username = username
+	client.Password = password
+}
+
+// refreshToken tries to obtain a new JWT using the stored credentials.
+func (client *ApiClient) refreshToken(ctx context.Context) error {
+	if client.Username == "" || client.Password == "" {
+		return fmt.Errorf("missing stored credentials")
+	}
+	_, err := client.Login(ctx, client.Username, client.Password, "")
+	return err
 }
