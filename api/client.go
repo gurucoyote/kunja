@@ -21,6 +21,10 @@ type ApiClient struct {
 	Verbose    bool
 }
 
+// tokenRefreshAttemptedKey marks a context that already retried a token refresh once.
+// Prevents infinite refresh loops on repeated 401 responses.
+type tokenRefreshAttemptedKey struct{}
+
 func NewApiClient(baseURL string, token string) *ApiClient {
 	transport := &http.Transport{
 		MaxIdleConns:        100,
@@ -96,9 +100,11 @@ func (client *ApiClient) getCtx(ctx context.Context, apiPath string) (string, er
 	if err != nil {
 		return "", err
 	}
-	if status == http.StatusUnauthorized {
+	if status == http.StatusUnauthorized && ctx.Value(tokenRefreshAttemptedKey{}) == nil {
 		// try to transparently refresh the token once
 		if err := client.refreshToken(ctx); err == nil {
+			// mark attempt to avoid infinite loops on repeated 401
+			ctx = context.WithValue(ctx, tokenRefreshAttemptedKey{}, true)
 			return client.getCtx(ctx, apiPath)
 		}
 	}
@@ -114,6 +120,16 @@ func (client *ApiClient) putCtx(ctx context.Context, apiPath string, payload str
 	if err != nil {
 		return "", err
 	}
+	if status == http.StatusUnauthorized && ctx.Value(tokenRefreshAttemptedKey{}) == nil {
+		if err := client.refreshToken(ctx); err == nil {
+			ctx = context.WithValue(ctx, tokenRefreshAttemptedKey{}, true)
+			// retry once after refresh
+			respBody, status, err = client.request(ctx, http.MethodPut, apiPath, bytes.NewBuffer([]byte(payload)))
+			if err != nil {
+				return "", err
+			}
+		}
+	}
 	if status < 200 || status >= 300 {
 		return "", errorFromBody(status, respBody)
 	}
@@ -126,6 +142,16 @@ func (client *ApiClient) deleteCtx(ctx context.Context, apiPath string) (string,
 	if err != nil {
 		return "", err
 	}
+	if status == http.StatusUnauthorized && ctx.Value(tokenRefreshAttemptedKey{}) == nil {
+		if err := client.refreshToken(ctx); err == nil {
+			ctx = context.WithValue(ctx, tokenRefreshAttemptedKey{}, true)
+			// retry once after refresh
+			respBody, status, err = client.request(ctx, http.MethodDelete, apiPath, nil)
+			if err != nil {
+				return "", err
+			}
+		}
+	}
 	if status < 200 || status >= 300 {
 		return "", errorFromBody(status, respBody)
 	}
@@ -136,6 +162,17 @@ func (client *ApiClient) postCtx(ctx context.Context, apiPath string, payload st
 	respBody, status, err := client.request(ctx, http.MethodPost, apiPath, bytes.NewBuffer([]byte(payload)))
 	if err != nil {
 		return "", err
+	}
+	// Avoid infinite recursion on /login: never try to refresh when the login endpoint itself returns 401.
+	if status == http.StatusUnauthorized && apiPath != "/login" && ctx.Value(tokenRefreshAttemptedKey{}) == nil {
+		if err := client.refreshToken(ctx); err == nil {
+			ctx = context.WithValue(ctx, tokenRefreshAttemptedKey{}, true)
+			// retry once after refresh
+			respBody, status, err = client.request(ctx, http.MethodPost, apiPath, bytes.NewBuffer([]byte(payload)))
+			if err != nil {
+				return "", err
+			}
+		}
 	}
 	if status < 200 || status >= 300 {
 		return "", errorFromBody(status, respBody)
