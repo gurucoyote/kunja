@@ -18,3 +18,4 @@ adapter/\*go
 internal/\*go
 api/\*/
 api/\*/\*go
+python/
