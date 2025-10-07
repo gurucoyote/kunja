@@ -161,9 +161,9 @@ func buildMCPServer() *server.MCPServer {
 	// Native MCP time tools – simpler, forgiving parameters
 	// ------------------------------------------------------------------
 
-	// time.add
+	// time_add
 	addTool := mcp.NewTool(
-		"time.add",
+		"time_add",
 		mcp.WithDescription("Add a duration to a timestamp. Defaults to now."),
 		mcp.WithString("ts", mcp.Description("RFC3339, YYYY-MM-DD, 'now', or unix seconds/ms")),
 		mcp.WithNumber("seconds"),
@@ -186,9 +186,9 @@ func buildMCPServer() *server.MCPServer {
 	})
 	BuiltinTools = append(BuiltinTools, addTool)
 
-	// time.sub
+	// time_sub
 	subTool := mcp.NewTool(
-		"time.sub",
+		"time_sub",
 		mcp.WithDescription("Subtract a duration from a timestamp. Defaults to now."),
 		mcp.WithString("ts", mcp.Description("RFC3339, YYYY-MM-DD, 'now', or unix seconds/ms")),
 		mcp.WithNumber("seconds"),
@@ -211,9 +211,9 @@ func buildMCPServer() *server.MCPServer {
 	})
 	BuiltinTools = append(BuiltinTools, subTool)
 
-	// time.diff
+	// time_diff
 	diffTool := mcp.NewTool(
-		"time.diff",
+		"time_diff",
 		mcp.WithDescription("Difference between two timestamps. Returns a number (default seconds)."),
 		mcp.WithString("ts", mcp.Required(), mcp.Description("RFC3339, YYYY-MM-DD, 'now', or unix seconds/ms")),
 		mcp.WithString("ts2", mcp.Required(), mcp.Description("RFC3339, YYYY-MM-DD, or unix epoch")),
@@ -243,9 +243,9 @@ func buildMCPServer() *server.MCPServer {
 	})
 	BuiltinTools = append(BuiltinTools, diffTool)
 
-	// time.convert
+	// time_convert
 	convertTool := mcp.NewTool(
-		"time.convert",
+		"time_convert",
 		mcp.WithDescription("Convert a timestamp to another time-zone."),
 		mcp.WithString("ts", mcp.Required(), mcp.Description("RFC3339, YYYY-MM-DD, or unix epoch")),
 		mcp.WithString("toTZ", mcp.Required(), mcp.Description("IANA time-zone, e.g. Europe/Berlin")),
@@ -271,7 +271,7 @@ func buildMCPServer() *server.MCPServer {
 	// Compatibility wrapper: timecalc
 	timecalcTool := mcp.NewTool(
 		"timecalc",
-		mcp.WithDescription("Compatibility wrapper for time calculations (prefer time.add, time.sub, time.diff, time.convert)."),
+		mcp.WithDescription("Compatibility wrapper for time calculations (prefer time_add, time_sub, time_diff, time_convert)."),
 		mcp.WithString("op", mcp.Required(), mcp.Description("add|plus|+ / sub|minus|- / diff|delta / convert|tz")),
 		mcp.WithString("ts", mcp.Description("base timestamp; defaults to 'now' for add/sub")),
 		mcp.WithString("dur", mcp.Description("duration for add/sub")),
