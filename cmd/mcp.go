@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -515,7 +516,8 @@ var mcpCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(mcpCmd)
-	mcpCmd.Flags().StringVarP(&mcpLog, "log", "l", "kunja-mcp.log", "debug log file")
+	defaultLogPath := filepath.Join(defaultConfigDir(), "kunja-mcp.log")
+	mcpCmd.Flags().StringVarP(&mcpLog, "log", "l", defaultLogPath, "debug log file")
 
 	// Custom help prints a human-readable catalogue of all MCP tools.
 	mcpCmd.SetHelpFunc(func(cmd *cobra.Command, _ []string) {
@@ -541,10 +543,13 @@ func init() {
 // runMCP starts an MCP server that exposes all Cobra commands as tools.
 func runMCP(_ *cobra.Command, _ []string) error {
 	// optional log file
-	f, err := os.OpenFile(mcpLog, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
-	if err == nil {
-		defer f.Close()
-		log.SetOutput(io.MultiWriter(os.Stderr, f))
+	if strings.TrimSpace(mcpLog) != "" {
+		if err := os.MkdirAll(filepath.Dir(mcpLog), 0o755); err == nil {
+			if f, err := os.OpenFile(mcpLog, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644); err == nil {
+				defer f.Close()
+				log.SetOutput(io.MultiWriter(os.Stderr, f))
+			}
+		}
 	}
 
 	// Build the MCP server and register all tools
